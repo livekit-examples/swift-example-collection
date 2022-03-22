@@ -55,6 +55,13 @@ class ParticipantCell: UICollectionViewCell {
         print("\(String(describing: self)) deinit")
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        print("prepareForReuse")
+        videoView.track = nil
+        labelView.text = ""
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         videoView.frame = contentView.bounds
