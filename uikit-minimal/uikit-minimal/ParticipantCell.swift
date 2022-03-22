@@ -72,6 +72,8 @@ class ParticipantCell: UICollectionViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         videoView.frame = contentView.bounds
+        videoView.setNeedsLayout()
+        print("videoView setNeedsLayout")
 
         labelView.sizeToFit()
         labelView.frame = CGRect(x: (contentView.bounds.width - labelView.bounds.width) / 2,

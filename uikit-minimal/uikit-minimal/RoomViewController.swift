@@ -23,9 +23,28 @@ let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDg2MTAyOTgsImlzcy
 
 class RoomViewController: UIViewController {
 
-    lazy var room = Room(delegate: self)
+    private var room: Room?
+    private var collectionView: UICollectionView?
 
-    lazy var collectionView: UICollectionView = {
+    override func viewWillLayoutSubviews() {
+        print("viewWillLayoutSubviews...")
+        super.viewWillLayoutSubviews()
+        collectionView?.frame = view.bounds
+        collectionView?.collectionViewLayout.invalidateLayout()
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        updateNavigationBar()
+    }
+
+    private func setParticipants() {
+        DispatchQueue.main.async {
+            self.collectionView?.reloadData()
+        }
+    }
+
+    private func createCollectionView() -> UICollectionView? {
         print("creating UICollectionView...")
         let r = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
         r.backgroundColor = .blue
@@ -34,45 +53,90 @@ class RoomViewController: UIViewController {
         r.dataSource = room
         r.alwaysBounceVertical = true
         r.contentInsetAdjustmentBehavior = .never
+        view.addSubview(r)
         return r
-    }()
-
-    override func loadView() {
-        print("loadView...")
-        super.loadView()
-        view.addSubview(collectionView)
     }
 
-    override func viewWillLayoutSubviews() {
-        print("viewWillLayoutSubviews...")
-        super.viewWillLayoutSubviews()
-        collectionView.frame = view.bounds
-        collectionView.collectionViewLayout.invalidateLayout()
+    private func updateNavigationBar() {
+
+        if let room = room {
+            if case .connecting = room.connectionState {
+                self.navigationItem.title = "Connecting..."
+            } else if case .connected = room.connectionState {
+                self.navigationItem.title = room.name
+            }
+            navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Disconnect",
+                                                               style: .plain,
+                                                               target: self,
+                                                               action: #selector(onTapDisconnect(sender:)))
+        } else {
+            self.navigationItem.title = "Disconnected"
+            navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Connect",
+                                                               style: .plain,
+                                                               target: self,
+                                                               action: #selector(onTapConnect(sender:)))
+        }
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    @objc func onTapConnect(sender: UIBarButtonItem) {
 
-        print("connecting...")
-        room.connect(url, token).then { [weak self] room in
+        navigationItem.leftBarButtonItem?.isEnabled = false
+
+        let roomOptions = RoomOptions(
+            adaptiveStream: true,
+            dynacast: true
+        )
+
+        let room = Room(delegate: self)
+        self.room = room
+
+        room.connect(url, token, roomOptions: roomOptions).then { [weak self] room in
             guard let self = self else { return }
             print("connected to server version: \(String(describing: room.serverVersion))")
-
+            DispatchQueue.main.async {
+                self.collectionView = self.createCollectionView()
+            }
             self.setParticipants()
 
         }.catch { error in
             print("failed to connect with error: \(error)")
+            self.room = nil
+            DispatchQueue.main.async {
+                self.updateNavigationBar()
+            }
         }
     }
 
-    private func setParticipants() {
-        DispatchQueue.main.async {
-            self.collectionView.reloadData()
+    @objc func onTapDisconnect(sender: UIBarButtonItem) {
+
+        guard let room = self.room else {
+            return
+        }
+
+        navigationItem.leftBarButtonItem?.isEnabled = false
+
+        room.disconnect().then {
+            self.room = nil
+            DispatchQueue.main.async {
+                self.collectionView?.removeFromSuperview()
+                self.collectionView = nil
+                self.updateNavigationBar()
+            }
         }
     }
 }
 
 extension RoomViewController: RoomDelegate {
+
+    func room(_ room: Room, didUpdate connectionState: ConnectionState, oldValue: ConnectionState) {
+
+        if !connectionState.isEqual(to: oldValue, includingAssociatedValues: false) {
+
+            DispatchQueue.main.async {
+                self.updateNavigationBar()
+            }
+        }
+    }
 
     func room(_ room: Room, participantDidJoin participant: RemoteParticipant) {
         setParticipants()
@@ -88,7 +152,7 @@ extension RoomViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         print("sizeForItemAt...")
 
-        let columns: CGFloat = 2
+        let columns: CGFloat = 3
         let size = collectionView.bounds.width / columns
         return CGSize(width: size, height: size)
     }

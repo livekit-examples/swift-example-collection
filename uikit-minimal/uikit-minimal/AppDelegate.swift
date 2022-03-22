@@ -15,11 +15,18 @@
  */
 
 import UIKit
+import Logging
+import LiveKit
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    // MARK: UISceneSession Lifecycle
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+
+        LoggingSystem.bootstrap({ LiveKitLogHandler(label: $0) })
+
+        return true
+    }
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
         // Called when a new scene session is being created.
