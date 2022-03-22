@@ -58,8 +58,15 @@ class ParticipantCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         print("prepareForReuse")
-        videoView.track = nil
+
+        if let previousParticipant = participant {
+            // un-listen previous participant's events
+            // in case this cell gets reused.
+            previousParticipant.remove(delegate: self)
+        }
+
         labelView.text = ""
+        videoView.isHidden = true
     }
 
     override func layoutSubviews() {
@@ -74,13 +81,6 @@ class ParticipantCell: UICollectionViewCell {
     }
 
     public func set(participant: Participant) {
-        guard self.participant != participant else { return }
-
-        if let previousParticipant = self.participant {
-            // un-listen previous participant's events
-            // in case this cell gets reused.
-            previousParticipant.remove(delegate: self)
-        }
 
         // keep reference to current participant
         self.participant = participant
@@ -93,6 +93,7 @@ class ParticipantCell: UICollectionViewCell {
         setFirstVideoTrack()
 
         // make sure the cell will call layoutSubviews()
+        videoView.isHidden = false
         setNeedsLayout()
     }
 
