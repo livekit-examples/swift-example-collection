@@ -23,8 +23,9 @@ class ParticipantCell: UICollectionViewCell {
 
     public let videoView: VideoView = {
         let r = VideoView()
-        r.layoutMode = .fit
+        r.layoutMode = .fill
         r.backgroundColor = .black
+        r.clipsToBounds = true
         return r
     }()
 
