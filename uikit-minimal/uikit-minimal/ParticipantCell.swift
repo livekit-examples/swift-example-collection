@@ -36,7 +36,29 @@ class ParticipantCell: UICollectionViewCell {
     }()
 
     // weak reference to the Participant
-    public private(set) weak var participant: Participant?
+    public weak var participant: Participant? {
+        didSet {
+            guard oldValue != participant else { return }
+
+            if let oldValue = oldValue {
+                // un-listen previous participant's events
+                // in case this cell gets reused.
+                oldValue.remove(delegate: self)
+                videoView.track = nil
+                labelView.text = ""
+            }
+
+            if let participant = participant {
+                // listen to events
+                participant.add(delegate: self)
+                setFirstVideoTrack()
+                labelView.text = participant.identity
+
+                // make sure the cell will call layoutSubviews()
+                setNeedsLayout()
+            }
+        }
+    }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -60,14 +82,7 @@ class ParticipantCell: UICollectionViewCell {
         super.prepareForReuse()
         print("prepareForReuse")
 
-        if let previousParticipant = participant {
-            // un-listen previous participant's events
-            // in case this cell gets reused.
-            previousParticipant.remove(delegate: self)
-        }
-
-        labelView.text = ""
-        videoView.isHidden = true
+        participant = nil
     }
 
     override func layoutSubviews() {
@@ -83,30 +98,9 @@ class ParticipantCell: UICollectionViewCell {
                                  height: labelView.bounds.height)
     }
 
-    public func set(participant: Participant) {
-
-        // keep reference to current participant
-        self.participant = participant
-
-        // listen for events
-        participant.add(delegate: self)
-
-        labelView.text = participant.identity
-
-        setFirstVideoTrack()
-
-        // make sure the cell will call layoutSubviews()
-        videoView.isHidden = false
-        setNeedsLayout()
-    }
-
     private func setFirstVideoTrack() {
-        if let track = participant?.videoTracks.first?.track as? VideoTrack {
-            print("set track")
-            DispatchQueue.main.async {
-                self.videoView.track = track
-            }
-        }
+        let track = participant?.videoTracks.first?.track as? VideoTrack
+        self.videoView.track = track
     }
 }
 
@@ -114,11 +108,15 @@ extension ParticipantCell: ParticipantDelegate {
 
     func participant(_ participant: RemoteParticipant, didSubscribe publication: RemoteTrackPublication, track: Track) {
         print("didSubscribe")
-        setFirstVideoTrack()
+        DispatchQueue.main.async { [weak self] in
+            self?.setFirstVideoTrack()
+        }
     }
 
     func participant(_ participant: RemoteParticipant, didUnsubscribe publication: RemoteTrackPublication, track: Track) {
         print("didUnsubscribe")
-        setFirstVideoTrack()
+        DispatchQueue.main.async { [weak self] in
+            self?.setFirstVideoTrack()
+        }
     }
 }

@@ -18,7 +18,7 @@ import UIKit
 import LiveKit
 
 // enter your own LiveKit server url and token
-let url = "ws://localhost:7880"
+let url = "ws://192.168.68.53:7880"
 let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDg2MTAyOTgsImlzcyI6IkFQSTdSTVB5ZWdUN29lSCIsImp0aSI6InVzZXIxIiwibmJmIjoxNjQ2MDE4Mjk4LCJzdWIiOiJ1c2VyMSIsInZpZGVvIjp7InJvb20iOiJyb29tMSIsInJvb21Kb2luIjp0cnVlfX0.2PYh9r8Oa9p1ESdllY3v2TigebJQdp69T_0dk8tl2mE"
 
 class RoomViewController: UIViewController {
@@ -168,6 +168,23 @@ extension RoomViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         0
     }
+
+    // Optimizations
+    // turn off rendering for off-screen cells
+
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+
+        print("display: willDisplay")
+        guard let participantCell = cell as? ParticipantCell else { return }
+        participantCell.videoView.isHidden = false
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+
+        print("display: didEndDisplaying")
+        guard let participantCell = cell as? ParticipantCell else { return }
+        participantCell.videoView.isHidden = true
+    }
 }
 
 extension Room: UICollectionViewDataSource {
@@ -189,7 +206,7 @@ extension Room: UICollectionViewDataSource {
 
             if indexPath.row < remoteParticipants.count {
                 let participant = Array(remoteParticipants.values)[indexPath.row]
-                cell.set(participant: participant)
+                cell.participant = participant
             }
         }
 
