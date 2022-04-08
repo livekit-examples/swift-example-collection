@@ -26,6 +26,7 @@ class ParticipantCell: UICollectionViewCell {
         r.layoutMode = .fill
         r.backgroundColor = .black
         r.clipsToBounds = true
+        r.showDebugInfo = true
         return r
     }()
 
@@ -63,9 +64,7 @@ class ParticipantCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         print("\(String(describing: self)) init")
-
-        backgroundColor = .brown
-
+        backgroundColor = .blue
         contentView.addSubview(videoView)
         contentView.addSubview(labelView)
     }

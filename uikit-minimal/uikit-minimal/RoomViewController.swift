@@ -171,19 +171,16 @@ extension RoomViewController: UICollectionViewDelegateFlowLayout {
 
     // Optimizations
     // turn off rendering for off-screen cells
-
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-
         print("display: willDisplay")
         guard let participantCell = cell as? ParticipantCell else { return }
-        participantCell.videoView.isHidden = false
+        participantCell.videoView.isEnabled = true
     }
 
     func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-
         print("display: didEndDisplaying")
         guard let participantCell = cell as? ParticipantCell else { return }
-        participantCell.videoView.isHidden = true
+        participantCell.videoView.isEnabled = false
     }
 }
 
