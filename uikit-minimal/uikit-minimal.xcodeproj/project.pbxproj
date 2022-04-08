@@ -367,7 +367,7 @@
 			repositoryURL = "https://github.com/livekit/client-sdk-swift";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.12;
+				minimumVersion = 0.9.13;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
