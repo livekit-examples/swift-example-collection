@@ -23,10 +23,10 @@ class ParticipantCell: UICollectionViewCell {
 
     public let videoView: VideoView = {
         let r = VideoView()
-        r.layoutMode = .fill
+        r.layoutMode = .fit
         r.backgroundColor = .black
         r.clipsToBounds = true
-        r.showDebugInfo = true
+        r.debugMode = true
         return r
     }()
 
@@ -67,6 +67,8 @@ class ParticipantCell: UICollectionViewCell {
         backgroundColor = .blue
         contentView.addSubview(videoView)
         contentView.addSubview(labelView)
+
+        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(onTap)))
     }
 
     required init?(coder: NSCoder) {
@@ -75,6 +77,11 @@ class ParticipantCell: UICollectionViewCell {
 
     deinit {
         print("\(String(describing: self)) deinit")
+    }
+
+    @objc func onTap() {
+        print("toggle isEnabled")
+        videoView.isEnabled = !videoView.isEnabled
     }
 
     override func prepareForReuse() {
@@ -88,7 +95,6 @@ class ParticipantCell: UICollectionViewCell {
         super.layoutSubviews()
         videoView.frame = contentView.bounds
         videoView.setNeedsLayout()
-        print("videoView setNeedsLayout")
 
         labelView.sizeToFit()
         labelView.frame = CGRect(x: (contentView.bounds.width - labelView.bounds.width) / 2,

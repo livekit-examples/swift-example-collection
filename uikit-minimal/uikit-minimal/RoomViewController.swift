@@ -19,18 +19,36 @@ import LiveKit
 
 // enter your own LiveKit server url and token
 let url = "ws://192.168.68.53:7880"
-let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDg2MTAyOTgsImlzcyI6IkFQSTdSTVB5ZWdUN29lSCIsImp0aSI6InVzZXIxIiwibmJmIjoxNjQ2MDE4Mjk4LCJzdWIiOiJ1c2VyMSIsInZpZGVvIjp7InJvb20iOiJyb29tMSIsInJvb21Kb2luIjp0cnVlfX0.2PYh9r8Oa9p1ESdllY3v2TigebJQdp69T_0dk8tl2mE"
+let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NTQwMDc3MjEsImlzcyI6IkFQSTdSTVB5ZWdUN29lSCIsIm5iZiI6MTY1MTQxNTcyMSwic3ViIjoidXNlcjEiLCJ2aWRlbyI6eyJyb29tIjoicm9vbTEiLCJyb29tSm9pbiI6dHJ1ZX19.tlpPu_ejnmAfRsrNhpWnsoQbh_J6wd2ExZpPwkE5ZBw"
 
 class RoomViewController: UIViewController {
 
-    private var room: Room?
-    private var collectionView: UICollectionView?
+    private lazy var room: Room = {
+        Room(delegate: self)
+    }()
+
+    private lazy var collectionView: UICollectionView = {
+        print("creating UICollectionView...")
+        let r = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+        r.backgroundColor = .black
+        r.register(ParticipantCell.self, forCellWithReuseIdentifier: ParticipantCell.reuseIdentifier)
+        r.delegate = self
+        r.dataSource = room
+        r.alwaysBounceVertical = true
+        r.contentInsetAdjustmentBehavior = .never
+        return r
+    }()
 
     override func viewWillLayoutSubviews() {
         print("viewWillLayoutSubviews...")
         super.viewWillLayoutSubviews()
-        collectionView?.frame = view.bounds
-        collectionView?.collectionViewLayout.invalidateLayout()
+        collectionView.frame = view.bounds
+        collectionView.collectionViewLayout.invalidateLayout()
+    }
+
+    override func loadView() {
+        super.loadView()
+        view.addSubview(collectionView)
     }
 
     override func viewDidLoad() {
@@ -40,41 +58,30 @@ class RoomViewController: UIViewController {
 
     private func setParticipants() {
         DispatchQueue.main.async {
-            self.collectionView?.reloadData()
+            self.collectionView.reloadData()
+            self.updateNavigationBar()
         }
-    }
-
-    private func createCollectionView() -> UICollectionView? {
-        print("creating UICollectionView...")
-        let r = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
-        r.backgroundColor = .blue
-        r.register(ParticipantCell.self, forCellWithReuseIdentifier: ParticipantCell.reuseIdentifier)
-        r.delegate = self
-        r.dataSource = room
-        r.alwaysBounceVertical = true
-        r.contentInsetAdjustmentBehavior = .never
-        view.addSubview(r)
-        return r
     }
 
     private func updateNavigationBar() {
 
-        if let room = room {
-            if case .connecting = room.connectionState {
-                self.navigationItem.title = "Connecting..."
-            } else if case .connected = room.connectionState {
-                self.navigationItem.title = room.name
-            }
-            navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Disconnect",
-                                                               style: .plain,
-                                                               target: self,
-                                                               action: #selector(onTapDisconnect(sender:)))
-        } else {
+        switch room.connectionState {
+        case .disconnected:
             self.navigationItem.title = "Disconnected"
             navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Connect",
                                                                style: .plain,
                                                                target: self,
                                                                action: #selector(onTapConnect(sender:)))
+        case .connecting:
+            self.navigationItem.title = "Connecting..."
+        case .reconnecting:
+            self.navigationItem.title = "Re-Connecting..."
+        case .connected:
+            self.navigationItem.title = "\(room.name ?? "No name") (\(room.remoteParticipants.count))"
+            navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Disconnect",
+                                                               style: .plain,
+                                                               target: self,
+                                                               action: #selector(onTapDisconnect(sender:)))
         }
     }
 
@@ -87,20 +94,12 @@ class RoomViewController: UIViewController {
             dynacast: true
         )
 
-        let room = Room(delegate: self)
-        self.room = room
-
         room.connect(url, token, roomOptions: roomOptions).then { [weak self] room in
             guard let self = self else { return }
             print("connected to server version: \(String(describing: room.serverVersion))")
-            DispatchQueue.main.async {
-                self.collectionView = self.createCollectionView()
-            }
             self.setParticipants()
-
         }.catch { error in
             print("failed to connect with error: \(error)")
-            self.room = nil
             DispatchQueue.main.async {
                 self.updateNavigationBar()
             }
@@ -109,17 +108,10 @@ class RoomViewController: UIViewController {
 
     @objc func onTapDisconnect(sender: UIBarButtonItem) {
 
-        guard let room = self.room else {
-            return
-        }
-
         navigationItem.leftBarButtonItem?.isEnabled = false
 
         room.disconnect().then {
-            self.room = nil
             DispatchQueue.main.async {
-                self.collectionView?.removeFromSuperview()
-                self.collectionView = nil
                 self.updateNavigationBar()
             }
         }
@@ -129,20 +121,19 @@ class RoomViewController: UIViewController {
 extension RoomViewController: RoomDelegate {
 
     func room(_ room: Room, didUpdate connectionState: ConnectionState, oldValue: ConnectionState) {
-
-        if !connectionState.isEqual(to: oldValue, includingAssociatedValues: false) {
-
-            DispatchQueue.main.async {
-                self.updateNavigationBar()
-            }
+        print("connection state did update")
+        DispatchQueue.main.async {
+            self.updateNavigationBar()
         }
     }
 
     func room(_ room: Room, participantDidJoin participant: RemoteParticipant) {
+        print("participant did join")
         setParticipants()
     }
 
     func room(_ room: Room, participantDidLeave participant: RemoteParticipant) {
+        print("participant did leave")
         setParticipants()
     }
 }
