@@ -33,11 +33,13 @@ class RoomViewController: UIViewController {
         r.backgroundColor = .black
         r.register(ParticipantCell.self, forCellWithReuseIdentifier: ParticipantCell.reuseIdentifier)
         r.delegate = self
-        r.dataSource = room
+        r.dataSource = self
         r.alwaysBounceVertical = true
         r.contentInsetAdjustmentBehavior = .never
         return r
     }()
+
+    private var remoteParticipants = [RemoteParticipant]()
 
     override func viewWillLayoutSubviews() {
         print("viewWillLayoutSubviews...")
@@ -58,12 +60,17 @@ class RoomViewController: UIViewController {
 
     private func setParticipants() {
         DispatchQueue.main.async {
+            self.remoteParticipants = Array(self.room.remoteParticipants.values)
             self.collectionView.reloadData()
             self.updateNavigationBar()
         }
     }
 
     private func updateNavigationBar() {
+
+        self.navigationItem.title = nil
+        self.navigationItem.leftBarButtonItem = nil
+        self.navigationItem.rightBarButtonItem = nil
 
         switch room.connectionState {
         case .disconnected:
@@ -82,6 +89,11 @@ class RoomViewController: UIViewController {
                                                                style: .plain,
                                                                target: self,
                                                                action: #selector(onTapDisconnect(sender:)))
+            navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Shuffle",
+                                                                style: .plain,
+                                                                target: self,
+                                                                action: #selector(onTapShuffle(sender:)))
+
         }
     }
 
@@ -116,6 +128,13 @@ class RoomViewController: UIViewController {
             }
         }
     }
+
+    @objc func onTapShuffle(sender: UIBarButtonItem) {
+        DispatchQueue.main.async {
+            self.remoteParticipants.shuffle()
+            self.collectionView.reloadData()
+        }
+    }
 }
 
 extension RoomViewController: RoomDelegate {
@@ -123,6 +142,11 @@ extension RoomViewController: RoomDelegate {
     func room(_ room: Room, didUpdate connectionState: ConnectionState, oldValue: ConnectionState) {
         print("connection state did update")
         DispatchQueue.main.async {
+            if case .disconnected = connectionState {
+                self.remoteParticipants = []
+                self.collectionView.reloadData()
+            }
+
             self.updateNavigationBar()
         }
     }
@@ -175,7 +199,7 @@ extension RoomViewController: UICollectionViewDelegateFlowLayout {
     }
 }
 
-extension Room: UICollectionViewDataSource {
+extension RoomViewController: UICollectionViewDataSource {
 
     public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         // total number of participants to show (including local participant)
@@ -193,7 +217,7 @@ extension Room: UICollectionViewDataSource {
         if let cell = cell as? ParticipantCell {
 
             if indexPath.row < remoteParticipants.count {
-                let participant = Array(remoteParticipants.values)[indexPath.row]
+                let participant = remoteParticipants[indexPath.row]
                 cell.participant = participant
             }
         }

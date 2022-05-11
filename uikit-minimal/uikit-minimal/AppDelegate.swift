@@ -23,7 +23,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
 
-        LoggingSystem.bootstrap({ LiveKitLogHandler(label: $0) })
+        LoggingSystem.bootstrap({
+            var logHandler = StreamLogHandler.standardOutput(label: $0)
+            logHandler.logLevel = .debug
+            return logHandler
+        })
 
         return true
     }

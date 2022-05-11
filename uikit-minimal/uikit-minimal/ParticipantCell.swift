@@ -24,7 +24,7 @@ class ParticipantCell: UICollectionViewCell {
     public let videoView: VideoView = {
         let r = VideoView()
         r.layoutMode = .fit
-        r.backgroundColor = .black
+        r.backgroundColor = .darkGray
         r.clipsToBounds = true
         r.debugMode = true
         return r
@@ -64,7 +64,7 @@ class ParticipantCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         print("\(String(describing: self)) init")
-        backgroundColor = .blue
+        backgroundColor = .lightGray
         contentView.addSubview(videoView)
         contentView.addSubview(labelView)
 
@@ -81,7 +81,7 @@ class ParticipantCell: UICollectionViewCell {
 
     @objc func onTap() {
         print("toggle isEnabled")
-        videoView.isEnabled = !videoView.isEnabled
+        videoView.isHidden = !videoView.isHidden
     }
 
     override func prepareForReuse() {
