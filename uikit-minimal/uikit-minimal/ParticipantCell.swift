@@ -21,6 +21,10 @@ class ParticipantCell: UICollectionViewCell {
 
     public static let reuseIdentifier: String = "ParticipantCell"
 
+    public static var instanceCounter: Int = 0
+
+    public let cellId: Int
+
     public let videoView: VideoView = {
         let r = VideoView()
         r.layoutMode = .fit
@@ -53,7 +57,7 @@ class ParticipantCell: UICollectionViewCell {
                 // listen to events
                 participant.add(delegate: self)
                 setFirstVideoTrack()
-                labelView.text = participant.identity
+                labelView.text = "\(participant.identity) CELL# \(cellId)"
 
                 // make sure the cell will call layoutSubviews()
                 setNeedsLayout()
@@ -62,13 +66,15 @@ class ParticipantCell: UICollectionViewCell {
     }
 
     override init(frame: CGRect) {
+
+        Self.instanceCounter += 1
+        self.cellId = Self.instanceCounter
+
         super.init(frame: frame)
-        print("\(String(describing: self)) init")
+        print("\(String(describing: self)) init, instances: \(Self.instanceCounter)")
         backgroundColor = .lightGray
         contentView.addSubview(videoView)
         contentView.addSubview(labelView)
-
-        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(onTap)))
     }
 
     required init?(coder: NSCoder) {
@@ -76,17 +82,15 @@ class ParticipantCell: UICollectionViewCell {
     }
 
     deinit {
-        print("\(String(describing: self)) deinit")
-    }
 
-    @objc func onTap() {
-        print("toggle isEnabled")
-        videoView.isHidden = !videoView.isHidden
+        Self.instanceCounter -= 1
+
+        print("\(String(describing: self)) deinit, instances: \(Self.instanceCounter)")
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        print("prepareForReuse")
+        print("prepareForReuse, cellId: \(cellId)")
 
         participant = nil
     }
