@@ -18,7 +18,7 @@ import UIKit
 import LiveKit
 
 // enter your own LiveKit server url and token
-let url = "ws://192.168.68.53:7880"
+let url = "ws://localhost:7880"
 let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NTQwMDc3MjEsImlzcyI6IkFQSTdSTVB5ZWdUN29lSCIsIm5iZiI6MTY1MTQxNTcyMSwic3ViIjoidXNlcjEiLCJ2aWRlbyI6eyJyb29tIjoicm9vbTEiLCJyb29tSm9pbiI6dHJ1ZX19.tlpPu_ejnmAfRsrNhpWnsoQbh_J6wd2ExZpPwkE5ZBw"
 
 class RoomViewController: UIViewController {
