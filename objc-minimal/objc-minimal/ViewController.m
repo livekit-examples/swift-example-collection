@@ -9,87 +9,132 @@
 
 @import LiveKit;
 
-@interface ViewController () <TrackDelegate> {
-    Room *_room;
-    VideoView *_videoView;
-    LocalVideoTrack *_localVideoTrack;
+@interface ViewController () <RoomDelegateObjC> {
+  Room *_room;
+  VideoView *_localVideoView;
+  VideoView *_remoteVideoView;
 }
 
 @end
 
-
 @implementation ViewController
+
+- (void)room:(Room *)room
+    didUpdateConnectionState:(enum ConnectionState)connectionState
+          oldConnectionState:(enum ConnectionState)oldConnectionState {
+
+  NSLog(@"didUpdate connectionState: %ld", (long)connectionState);
+}
+
+- (void)room:(Room *)room
+         localParticipant:(LocalParticipant *)localParticipant
+    didPublishPublication:(LocalTrackPublication *)publication {
+
+  id localTrack = publication.track;
+  // filter out audio tracks etc
+  if ([localTrack isKindOfClass:[VideoTrack class]]) {
+    _localVideoView.track = localTrack;
+  }
+}
+
+- (void)room:(Room *)room
+                participant:(RemoteParticipant *)participant
+    didSubscribePublication:(RemoteTrackPublication *)publication
+                      track:(Track *)track {
+
+  id remoteTrack = publication.track;
+  // filter out audio tracks etc
+  if ([remoteTrack isKindOfClass:[VideoTrack class]]) {
+    _remoteVideoView.track = remoteTrack;
+  }
+}
 
 - (void)loadView {
 
-    Room *room = [[Room alloc] init];
-    // ...
-    _room = room;
+  Room *room = [[Room alloc] initWithDelegate:self
+                               connectOptions:nil
+                                  roomOptions:nil];
 
-    id options = [[CameraCaptureOptions alloc] init];
-    _localVideoTrack = [LocalVideoTrack createCameraTrackWithName:@"camera"
-                                                          options:options];
-    
-//    ConnectOptions *options = [[ConnectOptions alloc] initWithAutoSubscribe:false
-//                                 rtcConfiguration:nil
-//                                  publishOnlyMode:nil
-//                                  protocolVersion:ProtocolVersionV2];
+  _room = room;
 
-    NSView* view = [[NSView alloc] initWithFrame: NSMakeRect(100, 100, 300, 300)];
-    view.wantsLayer = YES;
-    view.layer.backgroundColor = NSColor.redColor.CGColor;
+  // Prepare parent View
 
-    _videoView = [[VideoView alloc] initWithFrame:view.frame];
-    _videoView.wantsLayer = YES;
-    _videoView.layer.backgroundColor = NSColor.greenColor.CGColor;
-    [view addSubview:_videoView];
-    
-    _videoView.mirrorMode = MirrorModeAuto;
-    _videoView.hidden = false;
+  NSView *view = [[NSView alloc] initWithFrame:NSMakeRect(100, 100, 300, 300)];
+  view.wantsLayer = YES;
+  view.layer.backgroundColor = NSColor.redColor.CGColor;
 
-    self.view = view;
+  // Prepare VideoView
+
+  _localVideoView = [[VideoView alloc] initWithFrame:view.frame];
+  _localVideoView.debugMode = YES;
+  _localVideoView.wantsLayer = YES;
+  _localVideoView.layer.backgroundColor = NSColor.greenColor.CGColor;
+  [view addSubview:_localVideoView];
+
+  _remoteVideoView = [[VideoView alloc] initWithFrame:view.frame];
+  _remoteVideoView.debugMode = YES;
+  _remoteVideoView.wantsLayer = YES;
+  _remoteVideoView.layer.backgroundColor = NSColor.purpleColor.CGColor;
+  [view addSubview:_remoteVideoView];
+
+  self.view = view;
 }
 
 - (void)viewDidLoad {
-    [super viewDidLoad];
+  [super viewDidLoad];
 
-    // Do any additional setup after loading the view.
+  // Do any additional setup after loading the view.
 
-    NSLog(@"view did load");
+  NSLog(@"view did load");
 
-    FBLPromise<Room *> *obj = [_room connectWithUrl:@"ws://localhost"
-                                              token:@""
-                                     connectOptions:nil
-                                        roomOptions:nil];
+  // Connect to Room
 
-    FBLPromise *promise = [obj then:^id _Nullable(Room * _Nullable value) {
-        NSLog(@"connected to region: %@", value.serverRegion);
+  FBLPromise<Room *> *connectPromise =
+      [_room connectWithURL:@"ws://localhost:7880"
+                      token:@"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+                            @"eyJleHAiOjE2NjU0MTMwOTMsImlzcyI6IkFQSTdSTVB5ZWdUN"
+                            @"29lSCIsIm5iZiI6MTY2MjgyMTA5Mywic3ViIjoidXNlcjUiLC"
+                            @"J2aWRlbyI6eyJyb29tIjoicm9vbTEiLCJyb29tSm9pbiI6dHJ"
+                            @"1ZX19.KuaUZo-IOjMgtJdw3SKjtbH0zG6kQjg_ETq9eW7iasQ"
+             connectOptions:nil
+                roomOptions:nil];
+
+  FBLPromise *promise =
+      [connectPromise then:^id _Nullable(Room *_Nullable room) {
+        // Successfully connected
+        NSLog(@"Connected to region: %@", room.serverRegion);
+
+        // Publish
+        [room.localParticipant setCameraEnabled:YES];
+        [room.localParticipant setMicrophoneEnabled:YES];
+
         return nil;
-    }];
+      }];
 
-    [promise catch:^(NSError * _Nonnull error) {
-        NSLog(@"Failed to connect with error: %@", error);
-    }];
-
-    _videoView.track = _localVideoTrack;
-    [_localVideoTrack start];
+  [promise catch:^(NSError *_Nonnull error) {
+    // Connect error
+    NSLog(@"Failed to connect with error: %@", error);
+  }];
 }
 
 - (void)viewDidLayout {
-    [super viewDidLayout];
-    _videoView.frame = self.view.bounds;
+  [super viewDidLayout];
+  CGSize size = self.view.bounds.size;
+  // Local view on the left side
+  _localVideoView.frame = CGRectMake(0, 0, size.width / 2, size.height);
+  // Local view on the right side
+  _remoteVideoView.frame = CGRectMake(_localVideoView.frame.size.width, 0,
+                                      size.width / 2, size.height);
 }
 
 - (void)viewWillDisappear {
-    [_localVideoTrack stop];
+  [_room disconnect];
 }
-
 
 - (void)setRepresentedObject:(id)representedObject {
-    [super setRepresentedObject:representedObject];
+  [super setRepresentedObject:representedObject];
 
-    // Update the view, if already loaded.
+  // Update the view, if already loaded.
 }
-
 
 @end
