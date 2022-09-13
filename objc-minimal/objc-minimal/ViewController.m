@@ -32,7 +32,7 @@
 
   id localTrack = publication.track;
   // filter out audio tracks etc
-  if ([localTrack isKindOfClass:[VideoTrack class]]) {
+  if ([localTrack conformsToProtocol:@protocol(VideoTrack)]) {
     _localVideoView.track = localTrack;
   }
 }
@@ -44,7 +44,7 @@
 
   id remoteTrack = publication.track;
   // filter out audio tracks etc
-  if ([remoteTrack isKindOfClass:[VideoTrack class]]) {
+  if ([remoteTrack conformsToProtocol:@protocol(VideoTrack)]) {
     _remoteVideoView.track = remoteTrack;
   }
 }
