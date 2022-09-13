@@ -1,0 +1,36 @@
+PODS:
+  - LiveKitClient (1.0.5):
+    - Logging
+    - PromisesSwift
+    - SwiftProtobuf
+    - WebRTC-SDK (~> 104.5112.02)
+  - Logging (1.4.0)
+  - PromisesObjC (2.1.1)
+  - PromisesSwift (2.1.1):
+    - PromisesObjC (= 2.1.1)
+  - SwiftProtobuf (1.20.1)
+  - WebRTC-SDK (104.5112.04)
+
+DEPENDENCIES:
+  - LiveKitClient
+
+SPEC REPOS:
+  trunk:
+    - LiveKitClient
+    - Logging
+    - PromisesObjC
+    - PromisesSwift
+    - SwiftProtobuf
+    - WebRTC-SDK
+
+SPEC CHECKSUMS:
+  LiveKitClient: 0a1dba2b9ce62555dfa4bd984af66b921802bce5
+  Logging: beeb016c9c80cf77042d62e83495816847ef108b
+  PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
+  PromisesSwift: 99fddfe4a0ec88a56486644c0da106694c92a604
+  SwiftProtobuf: e40a7684079620e84ba522dbaeab0cddb0ec7ffd
+  WebRTC-SDK: 3f688dd6e2fd2d5282c7c643e328c21e62ab10e7
+
+PODFILE CHECKSUM: f5fbe9a0cd1e0dd4facb2945215d7475e4395fe5
+
+COCOAPODS: 1.11.3
