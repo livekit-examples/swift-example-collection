@@ -90,12 +90,8 @@
   // Connect to Room
 
   FBLPromise<Room *> *connectPromise =
-      [_room connectWithURL:@"ws://localhost:7880"
-                      token:@"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
-                            @"eyJleHAiOjE2NjU0MTMwOTMsImlzcyI6IkFQSTdSTVB5ZWdUN"
-                            @"29lSCIsIm5iZiI6MTY2MjgyMTA5Mywic3ViIjoidXNlcjUiLC"
-                            @"J2aWRlbyI6eyJyb29tIjoicm9vbTEiLCJyb29tSm9pbiI6dHJ"
-                            @"1ZX19.KuaUZo-IOjMgtJdw3SKjtbH0zG6kQjg_ETq9eW7iasQ"
+      [_room connectWithURL:@"wss://_____.livekit.cloud"
+                      token:@""
              connectOptions:nil
                 roomOptions:nil];
 
