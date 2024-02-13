@@ -19,11 +19,11 @@
 
 @implementation ViewController
 
-- (void)room:(Room *)room didUpdateConnectionState:(enum ConnectionState)connectionState oldConnectionState:(enum ConnectionState)oldConnectionState {
-    NSLog(@"didUpdate connectionState: %ld", (long)connectionState);
+- (void)room:(Room *)room didUpdateConnectionState:(enum ConnectionState)newState from:(enum ConnectionState)oldState {
+    NSLog(@"didUpdate connectionState: %ld", (long)newState);
 }
 
-- (void)room:(Room *)room localParticipant:(LocalParticipant *)localParticipant didPublishPublication:(LocalTrackPublication *)publication {
+- (void)room:(Room *)room localParticipant:(LocalParticipant *)participant didPublishTrack:(LocalTrackPublication *)publication {
     id localTrack = publication.track;
     // filter out audio tracks etc
     if ([localTrack conformsToProtocol:@protocol(VideoTrack)]) {
@@ -31,7 +31,7 @@
     }
 }
 
-- (void)room:(Room *)room participant:(RemoteParticipant *)participant didSubscribePublication:(RemoteTrackPublication *)publication {
+- (void)room:(Room *)room participant:(RemoteParticipant *)participant didSubscribeTrack:(RemoteTrackPublication *)publication {
     id remoteTrack = publication.track;
     // filter out audio tracks etc
     if ([remoteTrack conformsToProtocol:@protocol(VideoTrack)]) {
