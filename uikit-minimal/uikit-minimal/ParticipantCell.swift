@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 LiveKit
+ * Copyright 2024 LiveKit
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-import UIKit
 import LiveKit
+import UIKit
 
 class ParticipantCell: UICollectionViewCell {
-
     public static let reuseIdentifier: String = "ParticipantCell"
 
     public static var instanceCounter: Int = 0
@@ -30,7 +29,7 @@ class ParticipantCell: UICollectionViewCell {
         r.layoutMode = .fit
         r.backgroundColor = .darkGray
         r.clipsToBounds = true
-        r.debugMode = true
+        r.isDebugMode = true
         return r
     }()
 
@@ -45,7 +44,7 @@ class ParticipantCell: UICollectionViewCell {
         didSet {
             guard oldValue != participant else { return }
 
-            if let oldValue = oldValue {
+            if let oldValue {
                 // un-listen previous participant's events
                 // in case this cell gets reused.
                 oldValue.remove(delegate: self)
@@ -53,11 +52,11 @@ class ParticipantCell: UICollectionViewCell {
                 labelView.text = ""
             }
 
-            if let participant = participant {
+            if let participant {
                 // listen to events
                 participant.add(delegate: self)
                 setFirstVideoTrack()
-                labelView.text = "\(participant.identity) CELL# \(cellId)"
+                labelView.text = "\(String(describing: participant.identity)) CELL# \(cellId)"
 
                 // make sure the cell will call layoutSubviews()
                 setNeedsLayout()
@@ -66,9 +65,8 @@ class ParticipantCell: UICollectionViewCell {
     }
 
     override init(frame: CGRect) {
-
         Self.instanceCounter += 1
-        self.cellId = Self.instanceCounter
+        cellId = Self.instanceCounter
 
         super.init(frame: frame)
         print("\(String(describing: self)) init, instances: \(Self.instanceCounter)")
@@ -77,12 +75,12 @@ class ParticipantCell: UICollectionViewCell {
         contentView.addSubview(labelView)
     }
 
-    required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
     deinit {
-
         Self.instanceCounter -= 1
 
         print("\(String(describing: self)) deinit, instances: \(Self.instanceCounter)")
@@ -109,20 +107,19 @@ class ParticipantCell: UICollectionViewCell {
 
     private func setFirstVideoTrack() {
         let track = participant?.videoTracks.first?.track as? VideoTrack
-        self.videoView.track = track
+        videoView.track = track
     }
 }
 
 extension ParticipantCell: ParticipantDelegate {
-
-    func participant(_ participant: RemoteParticipant, didSubscribe publication: RemoteTrackPublication, track: Track) {
+    func participant(_: RemoteParticipant, didSubscribeTrack _: RemoteTrackPublication) {
         print("didSubscribe")
         DispatchQueue.main.async { [weak self] in
             self?.setFirstVideoTrack()
         }
     }
 
-    func participant(_ participant: RemoteParticipant, didUnsubscribe publication: RemoteTrackPublication, track: Track) {
+    func participant(_: RemoteParticipant, didUnsubscribeTrack _: RemoteTrackPublication) {
         print("didUnsubscribe")
         DispatchQueue.main.async { [weak self] in
             self?.setFirstVideoTrack()
