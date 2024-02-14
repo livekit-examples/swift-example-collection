@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 LiveKit
+ * Copyright 2024 LiveKit
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-import UIKit
 import LiveKit
+import UIKit
 
 // enter your own LiveKit server url and token
 let url = "ws://localhost:7880"
-let token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NTQwMDc3MjEsImlzcyI6IkFQSTdSTVB5ZWdUN29lSCIsIm5iZiI6MTY1MTQxNTcyMSwic3ViIjoidXNlcjEiLCJ2aWRlbyI6eyJyb29tIjoicm9vbTEiLCJyb29tSm9pbiI6dHJ1ZX19.tlpPu_ejnmAfRsrNhpWnsoQbh_J6wd2ExZpPwkE5ZBw"
+let token = "your token"
 
 class RoomViewController: UIViewController {
-
-    private lazy var room: Room = {
-        Room(delegate: self)
-    }()
+    private lazy var room: Room = .init(delegate: self)
 
     private lazy var collectionView: UICollectionView = {
         print("creating UICollectionView...")
@@ -47,13 +44,14 @@ class RoomViewController: UIViewController {
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
 
-        self.timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: { [weak self] _ in
-            guard let self = self else { return }
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: { [weak self] _ in
+            guard let self else { return }
             self.reComputeVideoViewEnabled()
         })
     }
 
-    required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -76,36 +74,37 @@ class RoomViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        updateNavigationBar()
-    }
-
-    private func setParticipants() {
-        DispatchQueue.main.async {
-            self.remoteParticipants = Array(self.room.remoteParticipants.values)
-            self.collectionView.reloadData()
-            self.updateNavigationBar()
+        Task {
+            await updateNavigationBar()
         }
     }
 
-    private func updateNavigationBar() {
+    @MainActor
+    private func setParticipants() async {
+        remoteParticipants = Array(room.remoteParticipants.values)
+        collectionView.reloadData()
+        await updateNavigationBar()
+    }
 
-        self.navigationItem.title = nil
-        self.navigationItem.leftBarButtonItem = nil
-        self.navigationItem.rightBarButtonItem = nil
+    @MainActor
+    private func updateNavigationBar() async {
+        navigationItem.title = nil
+        navigationItem.leftBarButtonItem = nil
+        navigationItem.rightBarButtonItem = nil
 
         switch room.connectionState {
         case .disconnected:
-            self.navigationItem.title = "Disconnected"
+            navigationItem.title = "Disconnected"
             navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Connect",
                                                                style: .plain,
                                                                target: self,
                                                                action: #selector(onTapConnect(sender:)))
         case .connecting:
-            self.navigationItem.title = "Connecting..."
+            navigationItem.title = "Connecting..."
         case .reconnecting:
-            self.navigationItem.title = "Re-Connecting..."
+            navigationItem.title = "Re-Connecting..."
         case .connected:
-            self.navigationItem.title = "\(room.name ?? "No name") (\(room.remoteParticipants.count))"
+            navigationItem.title = "\(room.name ?? "No name") (\(room.remoteParticipants.count))"
             navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Disconnect",
                                                                style: .plain,
                                                                target: self,
@@ -114,12 +113,11 @@ class RoomViewController: UIViewController {
                                                                 style: .plain,
                                                                 target: self,
                                                                 action: #selector(onTapShuffle(sender:)))
-
         }
     }
 
-    @objc func onTapConnect(sender: UIBarButtonItem) {
-
+    @MainActor
+    @objc func onTapConnect(sender _: UIBarButtonItem) {
         navigationItem.leftBarButtonItem?.isEnabled = false
 
         let roomOptions = RoomOptions(
@@ -127,65 +125,68 @@ class RoomViewController: UIViewController {
             dynacast: true
         )
 
-        room.connect(url, token, roomOptions: roomOptions).then { [weak self] room in
-            guard let self = self else { return }
-            print("connected to server version: \(String(describing: room.serverVersion))")
-            self.setParticipants()
-        }.catch { error in
-            print("failed to connect with error: \(error)")
-            DispatchQueue.main.async {
-                self.updateNavigationBar()
+        Task {
+            do {
+                try await room.connect(url: url, token: token, roomOptions: roomOptions)
+                print("connected to server version: \(String(describing: room.serverVersion))")
+                await setParticipants()
+            } catch {
+                print("failed to connect with error: \(error)")
+                await updateNavigationBar()
             }
         }
     }
 
-    @objc func onTapDisconnect(sender: UIBarButtonItem) {
-
+    @MainActor
+    @objc func onTapDisconnect(sender _: UIBarButtonItem) {
         navigationItem.leftBarButtonItem?.isEnabled = false
 
-        room.disconnect().then {
-            DispatchQueue.main.async {
-                self.updateNavigationBar()
-            }
+        Task {
+            await room.disconnect()
+            await updateNavigationBar()
         }
     }
 
-    @objc func onTapShuffle(sender: UIBarButtonItem) {
-        DispatchQueue.main.async {
-            self.remoteParticipants.shuffle()
-            self.collectionView.reloadData()
-        }
+    @MainActor
+    @objc func onTapShuffle(sender _: UIBarButtonItem) {
+        remoteParticipants.shuffle()
+        collectionView.reloadData()
     }
 }
 
 extension RoomViewController: RoomDelegate {
-
-    func room(_ room: Room, didUpdate connectionState: ConnectionState, oldValue: ConnectionState) {
+    func room(_: Room, didUpdateConnectionState connectionState: ConnectionState, from _: ConnectionState) {
         print("connection state did update")
-        DispatchQueue.main.async {
+
+        Task { @MainActor in
+
             if case .disconnected = connectionState {
-                self.remoteParticipants = []
-                self.collectionView.reloadData()
+                remoteParticipants = []
+                collectionView.reloadData()
             }
 
-            self.updateNavigationBar()
+            await updateNavigationBar()
         }
     }
 
-    func room(_ room: Room, participantDidJoin participant: RemoteParticipant) {
+    func room(_: Room, participantDidConnect _: RemoteParticipant) {
         print("participant did join")
-        setParticipants()
+        Task { @MainActor in
+            await setParticipants()
+        }
     }
 
-    func room(_ room: Room, participantDidLeave participant: RemoteParticipant) {
+    @MainActor
+    func room(_: Room, participantDidDisconnect _: RemoteParticipant) {
         print("participant did leave")
-        setParticipants()
+        Task { @MainActor in
+            await setParticipants()
+        }
     }
 }
 
 extension RoomViewController: UICollectionViewDelegateFlowLayout {
-
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    func collectionView(_ collectionView: UICollectionView, layout _: UICollectionViewLayout, sizeForItemAt _: IndexPath) -> CGSize {
         print("sizeForItemAt...")
 
         let columns: CGFloat = 2
@@ -193,15 +194,15 @@ extension RoomViewController: UICollectionViewDelegateFlowLayout {
         return CGSize(width: size, height: size)
     }
 
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+    func collectionView(_: UICollectionView, layout _: UICollectionViewLayout, insetForSectionAt _: Int) -> UIEdgeInsets {
         .zero
     }
 
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+    func collectionView(_: UICollectionView, layout _: UICollectionViewLayout, minimumLineSpacingForSectionAt _: Int) -> CGFloat {
         0
     }
 
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+    func collectionView(_: UICollectionView, layout _: UICollectionViewLayout, minimumInteritemSpacingForSectionAt _: Int) -> CGFloat {
         0
     }
 
@@ -211,16 +212,15 @@ extension RoomViewController: UICollectionViewDelegateFlowLayout {
     }
 
     func reComputeVideoViewEnabled() {
-
-        let visibleCells = self.collectionView.visibleCells.compactMap { $0 as? ParticipantCell }
-        let offScreenCells = self.cellReference.allObjects.filter { !visibleCells.contains($0) }
+        let visibleCells = collectionView.visibleCells.compactMap { $0 as? ParticipantCell }
+        let offScreenCells = cellReference.allObjects.filter { !visibleCells.contains($0) }
 
         for cell in visibleCells.filter({ !$0.videoView.isEnabled }) {
             print("setting cell#\(cell.cellId) to true")
             cell.videoView.isEnabled = true
         }
 
-        for cell in offScreenCells.filter({ $0.videoView.isEnabled }) {
+        for cell in offScreenCells.filter(\.videoView.isEnabled) {
             print("setting cell#\(cell.cellId) to false")
             cell.videoView.isEnabled = false
         }
@@ -228,20 +228,17 @@ extension RoomViewController: UICollectionViewDelegateFlowLayout {
 }
 
 extension RoomViewController: UICollectionViewDataSource {
-
-    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    public func collectionView(_: UICollectionView, numberOfItemsInSection _: Int) -> Int {
         // total number of participants to show (including local participant)
         print("numberOfItemsInSection...")
         return remoteParticipants.count
     }
 
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ParticipantCell.reuseIdentifier,
                                                       for: indexPath)
 
         if let cell = cell as? ParticipantCell {
-
             // keep weak reference to cell
             cellReference.add(cell)
 
