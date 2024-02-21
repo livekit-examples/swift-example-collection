@@ -49,3 +49,49 @@ struct ContentView: View {
         .padding()
     }
 }
+
+class Example: LiveKit.VideoRenderer {
+    var isAdaptiveStreamEnabled: Bool { false }
+    var adaptiveStreamSize: CGSize {
+        CGSize(width: 100, height: 100)
+    }
+
+    func set(size _: CGSize) {}
+
+    func render(frame _: LiveKit.VideoFrame) {
+        // frame.toWebRTCVideoFrame()
+    }
+}
+
+extension LiveKit.VideoRotation {
+    func toWebRTCRotation() -> WebRTC.RTCVideoRotation {
+        switch self {
+        case ._0: return ._0
+        case ._90: return ._90
+        case ._180: return ._180
+        case ._270: return ._270
+        }
+    }
+}
+
+extension LiveKit.VideoFrame {
+    // Example to convert frame
+    func toWebRTCVideoFrame() -> WebRTC.RTCVideoFrame {
+        let rtcBuffer: RTCVideoFrameBuffer
+        if let buffer = buffer as? CVPixelVideoBuffer {
+            rtcBuffer = WebRTC.RTCCVPixelBuffer(pixelBuffer: buffer.pixelBuffer)
+        } else if let buffer = buffer as? I420VideoBuffer {
+            rtcBuffer = WebRTC.RTCI420Buffer(width: buffer.chromaWidth,
+                                             height: buffer.chromaHeight,
+                                             dataY: buffer.dataY,
+                                             dataU: buffer.dataU,
+                                             dataV: buffer.dataV)
+        } else {
+            fatalError("Unsupported type")
+        }
+
+        return RTCVideoFrame(buffer: rtcBuffer,
+                             rotation: rotation.toWebRTCRotation(),
+                             timeStampNs: timeStampNs)
+    }
+}

@@ -5,11 +5,10 @@
 //  Created by Hiroshi Horie on 2022/09/13.
 //
 
-import SwiftUI
 import LiveKitClient
+import SwiftUI
 
 class Controller: ObservableObject {
-
     let room: Room
 
     init() {
@@ -27,15 +26,13 @@ class Controller: ObservableObject {
 }
 
 extension Controller: RoomDelegate {
-
-    func room(_ room: Room, didUpdate connectionState: ConnectionState, oldValue: ConnectionState) {
+    func room(_: Room, didUpdate connectionState: ConnectionState, oldValue _: ConnectionState) {
         //
         print("connectionState -> \(connectionState)")
     }
 }
 
 struct ContentView: View {
-
     @ObservedObject var ctrl = Controller()
 
     var body: some View {
