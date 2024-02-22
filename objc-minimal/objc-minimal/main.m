@@ -9,10 +9,10 @@
 #import <Cocoa/Cocoa.h>
 
 int main(int argc, const char *argv[]) {
-  @autoreleasepool {
-    // Setup code that might create autoreleased objects goes here.
-    [NSApplication sharedApplication];
-    [NSApp setDelegate:[[AppDelegate alloc] init]];
-    [NSApp run];
-  }
+    @autoreleasepool {
+        // Setup code that might create autoreleased objects goes here.
+        [NSApplication sharedApplication];
+        [NSApp setDelegate:[[AppDelegate alloc] init]];
+        [NSApp run];
+    }
 }
