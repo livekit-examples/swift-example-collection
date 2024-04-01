@@ -7,7 +7,7 @@ target 'using-cocoapods (iOS)' do
   platform :ios, '13.0'
 
   # Pods for using-cocoapods (iOS)
-  pod 'LiveKitClient'
+  pod 'LiveKitClient', '2.0.5'
 end
 
 target 'using-cocoapods (macOS)' do
@@ -15,5 +15,5 @@ target 'using-cocoapods (macOS)' do
   platform :macos, '12.3'
 
   # Pods for using-cocoapods (macOS)
-  pod 'LiveKitClient'
+  pod 'LiveKitClient', '2.0.5'
 end

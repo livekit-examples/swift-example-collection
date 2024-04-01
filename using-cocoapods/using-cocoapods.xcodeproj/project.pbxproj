@@ -122,6 +122,7 @@
 				68FA4A0928D0537C00F0D47A /* Frameworks */,
 				68FA4A0A28D0537C00F0D47A /* Resources */,
 				1DF5C68337565BEC804870F9 /* [CP] Embed Pods Frameworks */,
+				8BBE9DB266D899D02F270CD9 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -141,6 +142,7 @@
 				68FA4A0F28D0537C00F0D47A /* Frameworks */,
 				68FA4A1028D0537C00F0D47A /* Resources */,
 				487213F4AF0EEB1B79377201 /* [CP] Embed Pods Frameworks */,
+				B0D62AA1696EB89972F5FBF1 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -262,6 +264,40 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-using-cocoapods (macOS)/Pods-using-cocoapods (macOS)-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		8BBE9DB266D899D02F270CD9 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-using-cocoapods (iOS)/Pods-using-cocoapods (iOS)-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-using-cocoapods (iOS)/Pods-using-cocoapods (iOS)-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-using-cocoapods (iOS)/Pods-using-cocoapods (iOS)-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B0D62AA1696EB89972F5FBF1 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-using-cocoapods (macOS)/Pods-using-cocoapods (macOS)-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-using-cocoapods (macOS)/Pods-using-cocoapods (macOS)-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-using-cocoapods (macOS)/Pods-using-cocoapods (macOS)-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		CA0E6824E39FCED02BC8C285 /* [CP] Check Pods Manifest.lock */ = {
