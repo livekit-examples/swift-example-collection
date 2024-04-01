@@ -16,6 +16,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		681865B32B4BB46F006DBC8A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		689FF19A291A5EF500D8DCD7 /* ReplayKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ReplayKit.framework; path = System/Library/Frameworks/ReplayKit.framework; sourceTree = SDKROOT; };
 		68C3CE0028C16233003DAFC7 /* objc-minimal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "objc-minimal.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		68C3CE0328C16233003DAFC7 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -68,6 +69,7 @@
 		68C3CE0228C16233003DAFC7 /* objc-minimal */ = {
 			isa = PBXGroup;
 			children = (
+				681865B32B4BB46F006DBC8A /* Info.plist */,
 				68C3CE0328C16233003DAFC7 /* AppDelegate.h */,
 				68C3CE0428C16233003DAFC7 /* AppDelegate.m */,
 				68C3CE0628C16233003DAFC7 /* ViewController.h */,
@@ -285,6 +287,7 @@
 				DEVELOPMENT_TEAM = 76TVFCUKK7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "objc-minimal/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSCameraUsageDescription = "uses your camera for video chat";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -318,6 +321,7 @@
 				DEVELOPMENT_TEAM = 76TVFCUKK7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "objc-minimal/Info.plist";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSCameraUsageDescription = "uses your camera for video chat";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -366,7 +370,7 @@
 			repositoryURL = "https://github.com/livekit/client-sdk-swift";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.8;
+				minimumVersion = 2.0.4;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

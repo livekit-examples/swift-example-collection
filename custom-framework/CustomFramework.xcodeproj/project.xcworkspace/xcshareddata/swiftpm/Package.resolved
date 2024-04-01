@@ -1,12 +1,13 @@
 {
+  "originHash" : "727398c0b292ba4052728cc638944a00ac7067321e283dedd2630f3e865fa408",
   "pins" : [
     {
       "identity" : "client-sdk-swift",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/livekit/client-sdk-swift",
       "state" : {
-        "revision" : "cb7b520c3846e8e61f70898317df330e8ca644c4",
-        "version" : "2.0.4"
+        "branch" : "remove-cheaders",
+        "revision" : "1e9013da57779cc881d0a3e3254a2bdd78b06806"
       }
     },
     {
@@ -37,5 +38,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }
