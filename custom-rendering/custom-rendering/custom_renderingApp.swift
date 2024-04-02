@@ -20,7 +20,7 @@ import SwiftUI
 struct custom_renderingApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RoomView()
         }
     }
 }
