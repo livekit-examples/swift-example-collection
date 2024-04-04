@@ -17,7 +17,7 @@
 import SwiftUI
 
 @main
-struct custom_renderingApp: App {
+struct minimalPIPApp: App {
     var body: some Scene {
         WindowGroup {
             RoomView()

@@ -5,6 +5,6 @@
       location = "group:../../../livekit/client-sdk-swift">
    </FileRef>
    <FileRef
-      location = "group:custom-rendering.xcodeproj">
+      location = "group:minimal-pip.xcodeproj">
    </FileRef>
 </Workspace>

@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		688B562B2BBB1AD2003750D1 /* LiveKit in Frameworks */ = {isa = PBXBuildFile; productRef = 688B562A2BBB1AD2003750D1 /* LiveKit */; };
-		689115732BBAD81900631EE5 /* custom_renderingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 689115722BBAD81900631EE5 /* custom_renderingApp.swift */; };
+		689115732BBAD81900631EE5 /* minimalPIP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 689115722BBAD81900631EE5 /* minimalPIP.swift */; };
 		689115752BBAD81900631EE5 /* RoomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 689115742BBAD81900631EE5 /* RoomView.swift */; };
 		689115772BBAD81A00631EE5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 689115762BBAD81A00631EE5 /* Assets.xcassets */; };
 		6891157B2BBAD81A00631EE5 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6891157A2BBAD81A00631EE5 /* Preview Assets.xcassets */; };
@@ -16,11 +16,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		6891156F2BBAD81900631EE5 /* custom-rendering.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "custom-rendering.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		689115722BBAD81900631EE5 /* custom_renderingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = custom_renderingApp.swift; sourceTree = "<group>"; };
+		6891156F2BBAD81900631EE5 /* minimal-pip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "minimal-pip.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		689115722BBAD81900631EE5 /* minimalPIP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = minimalPIP.swift; sourceTree = "<group>"; };
 		689115742BBAD81900631EE5 /* RoomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomView.swift; sourceTree = "<group>"; };
 		689115762BBAD81A00631EE5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		689115782BBAD81A00631EE5 /* custom_rendering.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = custom_rendering.entitlements; sourceTree = "<group>"; };
+		689115782BBAD81A00631EE5 /* minimal-pip.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "minimal-pip.entitlements"; sourceTree = "<group>"; };
 		6891157A2BBAD81A00631EE5 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		68E1C2FB2BBED9C5007DFB54 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		68FC34322BBC04C6005B2C4D /* MyCustomRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCustomRenderer.swift; sourceTree = "<group>"; };
@@ -41,7 +41,7 @@
 		689115662BBAD81900631EE5 = {
 			isa = PBXGroup;
 			children = (
-				689115712BBAD81900631EE5 /* custom-rendering */,
+				689115712BBAD81900631EE5 /* minimal-pip */,
 				689115702BBAD81900631EE5 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -49,23 +49,23 @@
 		689115702BBAD81900631EE5 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				6891156F2BBAD81900631EE5 /* custom-rendering.app */,
+				6891156F2BBAD81900631EE5 /* minimal-pip.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		689115712BBAD81900631EE5 /* custom-rendering */ = {
+		689115712BBAD81900631EE5 /* minimal-pip */ = {
 			isa = PBXGroup;
 			children = (
 				68E1C2FB2BBED9C5007DFB54 /* Info.plist */,
-				689115722BBAD81900631EE5 /* custom_renderingApp.swift */,
+				689115722BBAD81900631EE5 /* minimalPIP.swift */,
 				689115742BBAD81900631EE5 /* RoomView.swift */,
 				68FC34322BBC04C6005B2C4D /* MyCustomRenderer.swift */,
 				689115762BBAD81A00631EE5 /* Assets.xcassets */,
-				689115782BBAD81A00631EE5 /* custom_rendering.entitlements */,
+				689115782BBAD81A00631EE5 /* minimal-pip.entitlements */,
 				689115792BBAD81A00631EE5 /* Preview Content */,
 			);
-			path = "custom-rendering";
+			path = "minimal-pip";
 			sourceTree = "<group>";
 		};
 		689115792BBAD81A00631EE5 /* Preview Content */ = {
@@ -79,9 +79,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		6891156E2BBAD81900631EE5 /* custom-rendering */ = {
+		6891156E2BBAD81900631EE5 /* minimal-pip */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 6891157E2BBAD81A00631EE5 /* Build configuration list for PBXNativeTarget "custom-rendering" */;
+			buildConfigurationList = 6891157E2BBAD81A00631EE5 /* Build configuration list for PBXNativeTarget "minimal-pip" */;
 			buildPhases = (
 				6891156B2BBAD81900631EE5 /* Sources */,
 				6891156C2BBAD81900631EE5 /* Frameworks */,
@@ -91,12 +91,12 @@
 			);
 			dependencies = (
 			);
-			name = "custom-rendering";
+			name = "minimal-pip";
 			packageProductDependencies = (
 				688B562A2BBB1AD2003750D1 /* LiveKit */,
 			);
-			productName = "custom-rendering";
-			productReference = 6891156F2BBAD81900631EE5 /* custom-rendering.app */;
+			productName = "minimal-pip";
+			productReference = 6891156F2BBAD81900631EE5 /* minimal-pip.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -114,7 +114,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 6891156A2BBAD81900631EE5 /* Build configuration list for PBXProject "custom-rendering" */;
+			buildConfigurationList = 6891156A2BBAD81900631EE5 /* Build configuration list for PBXProject "minimal-pip" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -130,7 +130,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				6891156E2BBAD81900631EE5 /* custom-rendering */,
+				6891156E2BBAD81900631EE5 /* minimal-pip */,
 			);
 		};
 /* End PBXProject section */
@@ -154,7 +154,7 @@
 			files = (
 				689115752BBAD81900631EE5 /* RoomView.swift in Sources */,
 				68FC34332BBC04C6005B2C4D /* MyCustomRenderer.swift in Sources */,
-				689115732BBAD81900631EE5 /* custom_renderingApp.swift in Sources */,
+				689115732BBAD81900631EE5 /* minimalPIP.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -280,15 +280,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "custom-rendering/custom_rendering.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "minimal-pip/minimal-pip.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"custom-rendering/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"minimal-pip/Preview Content\"";
 				DEVELOPMENT_TEAM = 76TVFCUKK7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "custom-rendering/Info.plist";
+				INFOPLIST_FILE = "minimal-pip/Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Sample purpose";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -305,7 +305,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.4;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.livekit.custom-rendering";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.livekit.minimal-pip";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
@@ -320,15 +320,15 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = "custom-rendering/custom_rendering.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "minimal-pip/minimal-pip.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"custom-rendering/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"minimal-pip/Preview Content\"";
 				DEVELOPMENT_TEAM = 76TVFCUKK7;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "custom-rendering/Info.plist";
+				INFOPLIST_FILE = "minimal-pip/Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Sample purpose";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -345,7 +345,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.4;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "io.livekit.custom-rendering";
+				PRODUCT_BUNDLE_IDENTIFIER = "io.livekit.minimal-pip";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
@@ -358,7 +358,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		6891156A2BBAD81900631EE5 /* Build configuration list for PBXProject "custom-rendering" */ = {
+		6891156A2BBAD81900631EE5 /* Build configuration list for PBXProject "minimal-pip" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6891157C2BBAD81A00631EE5 /* Debug */,
@@ -367,7 +367,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		6891157E2BBAD81A00631EE5 /* Build configuration list for PBXNativeTarget "custom-rendering" */ = {
+		6891157E2BBAD81A00631EE5 /* Build configuration list for PBXNativeTarget "minimal-pip" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6891157F2BBAD81A00631EE5 /* Debug */,
