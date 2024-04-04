@@ -22,6 +22,7 @@
 		689115762BBAD81A00631EE5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		689115782BBAD81A00631EE5 /* custom_rendering.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = custom_rendering.entitlements; sourceTree = "<group>"; };
 		6891157A2BBAD81A00631EE5 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		68E1C2FB2BBED9C5007DFB54 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		68FC34322BBC04C6005B2C4D /* MyCustomRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyCustomRenderer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -56,6 +57,7 @@
 		689115712BBAD81900631EE5 /* custom-rendering */ = {
 			isa = PBXGroup;
 			children = (
+				68E1C2FB2BBED9C5007DFB54 /* Info.plist */,
 				689115722BBAD81900631EE5 /* custom_renderingApp.swift */,
 				689115742BBAD81900631EE5 /* RoomView.swift */,
 				68FC34322BBC04C6005B2C4D /* MyCustomRenderer.swift */,
@@ -286,6 +288,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "custom-rendering/Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Sample purpose";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -325,6 +328,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "custom-rendering/Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Sample purpose";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;

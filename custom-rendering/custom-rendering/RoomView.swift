@@ -36,7 +36,6 @@ struct MySwiftUICustomRendererView: NativeViewRepresentable {
 }
 
 struct MyRemoteVideoTrackView: View {
-    // let track = LocalVideoTrack.createCameraTrack()
     @EnvironmentObject var room: Room
     var body: some View {
         let firstRemoteVideoTrack = room.remoteParticipants.values
@@ -45,23 +44,29 @@ struct MyRemoteVideoTrackView: View {
             .first
         if let firstRemoteVideoTrack {
             MySwiftUICustomRendererView(track: firstRemoteVideoTrack)
+        } else {
+            Text("No Video track")
         }
     }
 }
 
 class RoomContext: ObservableObject {
     let room = Room()
-    init() {
-        print("RoomContext.init()")
-    }
 
-    deinit {
-        print("RoomContext.deinit")
+    init() {
+        #if os(iOS)
+        // Audio session category switch is required for PIP to work
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .moviePlayback)
+        } catch {
+            print("Setting category to AVAudioSessionCategoryPlayback failed.")
+        }
+        #endif
     }
 }
 
 struct RoomView: View {
-    // @StateObject var roomContext = RoomContext()
+    @StateObject var roomContext = RoomContext()
     let room = Room()
 
     var body: some View {
@@ -71,10 +76,8 @@ struct RoomView: View {
             // For example purpose, simply connect / disconnect when view appears / disappears
             .onAppear(perform: {
                 Task {
-                    // Connect to room...
+                    // Set your token here
                     try await room.connect(url: "", token: "")
-                    // Publish camera...
-                    try await room.localParticipant.setCamera(enabled: true)
                 }
             })
             .onDisappear(perform: {
