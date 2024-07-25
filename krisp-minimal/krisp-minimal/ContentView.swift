@@ -36,6 +36,7 @@ struct ContentView: View {
                 room.add(delegate: filter)
                 try await room.connect(url: "", token: "")
                 // Publish mic etc...
+                try await room.localParticipant.setMicrophone(enabled: true)
             }
         })
         .onDisappear(perform: {
