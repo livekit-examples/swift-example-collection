@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/livekit/swift-krisp-noise-filter",
       "state" : {
-        "revision" : "5c4608111033f1ac13edf64a335a1b9902c5496e",
-        "version" : "0.0.3"
+        "revision" : "b22efadd9ca926e73fd00285df676488e4276593",
+        "version" : "0.0.5"
       }
     },
     {
