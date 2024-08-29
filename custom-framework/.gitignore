@@ -88,6 +88,10 @@ fastlane/test_output
 # https://github.com/johnno1962/injectionforxcode
 
 iOSInjectionProject/
+.DS_Store
 
+# Ignore license files
+*.license
+
+# Ignore the example custom framework
 CustomFramework.xcframework/
-
