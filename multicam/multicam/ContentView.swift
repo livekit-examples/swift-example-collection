@@ -24,8 +24,32 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            SwiftUIVideoView(frontTrack)
-            SwiftUIVideoView(backTrack, pinchToZoomOptions: [.zoomIn, .resetOnRelease])
+            SwiftUIVideoView(frontTrack).onTapGesture {
+                Task {
+                    do {
+                        if frontTrack.trackState == .stopped {
+                            try await frontTrack.start()
+                        } else {
+                            try await frontTrack.stop()
+                        }
+                    } catch {
+                        print("Failed to toggle front track, error: \(error)")
+                    }
+                }
+            }
+            SwiftUIVideoView(backTrack, pinchToZoomOptions: [.zoomIn, .resetOnRelease]).onTapGesture {
+                Task {
+                    do {
+                        if backTrack.trackState == .stopped {
+                            try await backTrack.start()
+                        } else {
+                            try await backTrack.stop()
+                        }
+                    } catch {
+                        print("Failed to toggle back track, error: \(error)")
+                    }
+                }
+            }
         }
         .onAppear(perform: {
             Task {
@@ -58,7 +82,6 @@ struct ContentView: View {
                 } catch {
                     print("Failed to stop front track, error: \(error)")
                 }
-
                 do {
                     try await backTrack.stop()
                     print("Stopped back track")
