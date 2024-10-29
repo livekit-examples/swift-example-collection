@@ -37,21 +37,39 @@ struct MySwiftUICustomRendererView: NativeViewRepresentable {
 
 struct MyRemoteVideoTrackView: View {
     @EnvironmentObject var room: Room
+    @State var track: LocalVideoTrack?
+
     var body: some View {
-        let firstRemoteVideoTrack = room.remoteParticipants.values
-            .flatMap(\.trackPublications.values)
-            .compactMap { $0.track as? RemoteVideoTrack }
-            .first
-        if let firstRemoteVideoTrack {
-            MySwiftUICustomRendererView(track: firstRemoteVideoTrack)
-        } else {
-            Text("No Video track")
+        // For remote tracks:
+        // let track = room.remoteParticipants.values
+        //     .flatMap(\.trackPublications.values)
+        //     .compactMap { $0.track as? RemoteVideoTrack }
+        //     .first
+        Group {
+            if let track {
+                MySwiftUICustomRendererView(track: track)
+            } else {
+                Text("No Video track")
+            }
+        }.onAppear {
+            track = LocalVideoTrack.createCameraTrack()
+            Task {
+                if let cameraCapturer = track?.capturer as? CameraCapturer {
+                    cameraCapturer.isMultitaskingAccessEnabled = true
+                }
+                try await track?.start()
+            }
+        }.onDisappear {
+            Task {
+                try await track?.stop()
+            }
         }
     }
 }
 
 class RoomContext: ObservableObject {
-    let room = Room()
+    // Don't suspend local video tracks in background
+    let room = Room(roomOptions: RoomOptions(suspendLocalVideoTracksInBackground: false))
 
     init() {
         #if os(iOS)

@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/jwt-kit.git",
       "state" : {
-        "revision" : "e05513b5aec24f88012b6e3034115b6bc915356a",
-        "version" : "4.13.2"
+        "revision" : "c2595b9ad7f512d7f334830b4df1fed6e917946a",
+        "version" : "4.13.4"
       }
     },
     {
@@ -59,8 +59,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/livekit/webrtc-xcframework.git",
       "state" : {
-        "revision" : "56e5119f00daa2e42e10670d29ae2edbff6be961",
-        "version" : "114.5735.13"
+        "revision" : "e43fe60fddd27e2d88ba0568ac2a2a15591b3063",
+        "version" : "125.6422.11"
       }
     }
   ],

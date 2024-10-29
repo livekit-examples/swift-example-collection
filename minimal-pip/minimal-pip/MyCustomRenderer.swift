@@ -24,10 +24,13 @@ class MyCustomRendererView: NativeView {
     public lazy var pipController: AVPictureInPictureController = {
         let contentSource = AVPictureInPictureController.ContentSource(sampleBufferDisplayLayer: sampleBufferDisplayLayer,
                                                                        playbackDelegate: self)
-        return AVPictureInPictureController(contentSource: contentSource)
+        let result = AVPictureInPictureController(contentSource: contentSource)
+        result.delegate = self
+        return result
     }()
 
     private var pipPossibleObservation: NSKeyValueObservation?
+    private var rotation: LiveKit.VideoRotation?
 
     override init(frame: CGRect) {
         sampleBufferDisplayLayer = AVSampleBufferDisplayLayer()
@@ -64,6 +67,11 @@ class MyCustomRendererView: NativeView {
 
     override func performLayout() {
         super.performLayout()
+
+        if let rotation {
+            sampleBufferDisplayLayer.setAffineTransform(CGAffineTransform(rotationAngle: rotation.rotationAngle))
+        }
+
         sampleBufferDisplayLayer.frame = bounds
         sampleBufferDisplayLayer.removeAllAnimations()
     }
@@ -76,6 +84,14 @@ extension MyCustomRendererView: VideoRenderer {
     func set(size _: CGSize) {}
 
     func render(frame: LiveKit.VideoFrame) {
+
+        if rotation != frame.rotation {
+            rotation = frame.rotation
+            Task { @MainActor in
+                setNeedsLayout()
+            }
+        }
+
         if let sampleBuffer = frame.toCMSampleBuffer() {
             sampleBufferDisplayLayer.sampleBufferRenderer.enqueue(sampleBuffer)
         }
@@ -98,5 +114,21 @@ extension MyCustomRendererView: AVPictureInPictureSampleBufferPlaybackDelegate {
 
     func pictureInPictureController(_: AVPictureInPictureController, skipByInterval _: CMTime, completion completionHandler: @escaping () -> Void) {
         completionHandler()
+    }
+}
+
+extension MyCustomRendererView: AVPictureInPictureControllerDelegate {
+    // ...
+}
+
+extension LiveKit.VideoRotation {
+    var rotationAngle: CGFloat {
+        switch self {
+        case ._0: return 0
+        case ._90: return .pi / 2
+        case ._180: return .pi
+        case ._270: return 3 * .pi / 2
+        @unknown default: return 0
+        }
     }
 }
