@@ -31,15 +31,7 @@ struct MyRemoteVideoTrackView: View {
         //     .first
         Group {
             if let track {
-                PiPView(track: track, pip: pip)
-                    .overlay(alignment: .topTrailing) {
-                        Button {
-                            pip.toggle()
-                        } label: {
-                            Text("PIP")
-                        }
-                        .padding()
-                    }
+                PiPView(track: track)
             } else {
                 Text("No Video track")
             }

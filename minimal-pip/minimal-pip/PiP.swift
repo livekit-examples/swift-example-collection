@@ -11,43 +11,59 @@ import LiveKit
 
 struct PiPView: UIViewControllerRepresentable {
     let track: VideoTrack
-    let pip: Bool
     
+    private let previewController = UIViewController()
     private let videoCallController = AVPictureInPictureVideoCallViewController()
-
+    
     func makeUIViewController(context: Context) -> UIViewController {
-        let rendering = PiPRenderingView { frame in
+        let videoCallView = SampleRenderingView { frame in
             videoCallController.view.transform = CGAffineTransform(rotationAngle: frame.rotation.rotationAngle)
             videoCallController.preferredContentSize = frame.rotatedSize
         }
-        rendering.sampleBufferDisplayLayer.videoGravity = .resizeAspectFill
-        rendering.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        rendering.frame = videoCallController.view.bounds
-        videoCallController.view.addSubview(rendering)
-        track.add(videoRenderer: rendering)
+        videoCallView.sampleBufferDisplayLayer.videoGravity = .resizeAspectFill
+        videoCallView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        videoCallView.frame = videoCallController.view.bounds
+        videoCallController.view.addSubview(videoCallView)
+        track.add(videoRenderer: videoCallView)
         
-        return videoCallController
-    }
-    
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        if pip {
-            context.coordinator.start()
-        } else {
-            context.coordinator.stop()
+        let previewView = SampleRenderingView { frame in
+            previewController.view.transform = CGAffineTransform(rotationAngle: frame.rotation.rotationAngle)
         }
+        previewView.sampleBufferDisplayLayer.videoGravity = .resizeAspectFill
+        previewView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        previewView.frame = previewController.view.bounds
+        previewController.view.addSubview(previewView)
+        track.add(videoRenderer: previewView)
+        
+        return previewController
     }
     
-    func makeCoordinator() -> PiPCoordinator {
-        let contentSource = AVPictureInPictureController.ContentSource(activeVideoCallSourceView: videoCallController.view, contentViewController: videoCallController)
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        let contentSource = AVPictureInPictureController.ContentSource(activeVideoCallSourceView: previewController.view, contentViewController: videoCallController)
         let controller = AVPictureInPictureController(contentSource: contentSource)
         controller.canStartPictureInPictureAutomaticallyFromInline = true
+        controller.setValue(1, forKey: "controlsStyle")
         
-        let coordinator = PiPCoordinator(controller: controller)
+        let coordinator = Coordinator(controller: controller)
+        controller.delegate = coordinator
         return coordinator
+    }
+    
+    class Coordinator: NSObject, AVPictureInPictureControllerDelegate {
+        private let controller: AVPictureInPictureController
+        
+        init(controller: AVPictureInPictureController) {
+            self.controller = controller
+            super.init()
+        }
+
+        // Implement delegate methods if needed...
     }
 }
 
-class PiPRenderingView: UIView {
+final class SampleRenderingView: UIView {
     override class var layerClass: AnyClass {
         AVSampleBufferDisplayLayer.self
     }
@@ -68,7 +84,7 @@ class PiPRenderingView: UIView {
     }
 }
 
-extension PiPRenderingView: VideoRenderer {
+extension SampleRenderingView: VideoRenderer {
     var isAdaptiveStreamEnabled: Bool { true }
     var adaptiveStreamSize: CGSize { bounds.size }
     func set(size _: CGSize) {}
@@ -80,24 +96,6 @@ extension PiPRenderingView: VideoRenderer {
                 onRender(frame)
             }
         }
-    }
-}
-
-class PiPCoordinator: NSObject, AVPictureInPictureControllerDelegate {
-    private let controller: AVPictureInPictureController
-    
-    init(controller: AVPictureInPictureController) {
-        self.controller = controller
-        super.init()
-        controller.delegate = self
-    }
-    
-    func start() {
-        controller.startPictureInPicture()
-    }
-    
-    func stop() {
-        controller.stopPictureInPicture()
     }
 }
 
