@@ -18,26 +18,10 @@ import AVFoundation
 import LiveKit
 import SwiftUI
 
-// Make custom renderer view usable in SwiftUI
-struct MySwiftUICustomRendererView: NativeViewRepresentable {
-    let track: VideoTrack
-
-    func makeView(context: Context) -> MyCustomRendererView {
-        let view = MyCustomRendererView()
-        updateView(view, context: context)
-        return view
-    }
-
-    func updateView(_ view: MyCustomRendererView, context _: Context) {
-        track.add(videoRenderer: view)
-    }
-
-    static func dismantleView(_: MyCustomRendererView, coordinator _: ()) {}
-}
-
 struct MyRemoteVideoTrackView: View {
     @EnvironmentObject var room: Room
     @State var track: LocalVideoTrack?
+    @State var pip = false
 
     var body: some View {
         // For remote tracks:
@@ -47,7 +31,15 @@ struct MyRemoteVideoTrackView: View {
         //     .first
         Group {
             if let track {
-                MySwiftUICustomRendererView(track: track)
+                PiPView(track: track, pip: pip)
+                    .overlay(alignment: .topTrailing) {
+                        Button {
+                            pip.toggle()
+                        } label: {
+                            Text("PIP")
+                        }
+                        .padding()
+                    }
             } else {
                 Text("No Video track")
             }

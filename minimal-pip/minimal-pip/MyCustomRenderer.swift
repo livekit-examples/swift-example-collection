@@ -121,14 +121,5 @@ extension MyCustomRendererView: AVPictureInPictureControllerDelegate {
     // ...
 }
 
-extension LiveKit.VideoRotation {
-    var rotationAngle: CGFloat {
-        switch self {
-        case ._0: return 0
-        case ._90: return .pi / 2
-        case ._180: return .pi
-        case ._270: return 3 * .pi / 2
-        @unknown default: return 0
-        }
-    }
-}
+
+
