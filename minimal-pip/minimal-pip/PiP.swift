@@ -12,28 +12,12 @@ import LiveKit
 struct PiPView: UIViewControllerRepresentable {
     let track: VideoTrack
     
-    private let previewController = UIViewController()
-    private let videoCallController = AVPictureInPictureVideoCallViewController()
+    @State private var previewController = PreviewViewController()
+    @State private var videoCallController = VideoCallViewController()
     
     func makeUIViewController(context: Context) -> UIViewController {
-        let videoCallView = SampleRenderingView { frame in
-            videoCallController.view.transform = CGAffineTransform(rotationAngle: frame.rotation.rotationAngle)
-            videoCallController.preferredContentSize = frame.rotatedSize
-        }
-        videoCallView.sampleBufferDisplayLayer.videoGravity = .resizeAspectFill
-        videoCallView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        videoCallView.frame = videoCallController.view.bounds
-        videoCallController.view.addSubview(videoCallView)
-        track.add(videoRenderer: videoCallView)
-        
-        let previewView = SampleRenderingView { frame in
-            previewController.view.transform = CGAffineTransform(rotationAngle: frame.rotation.rotationAngle)
-        }
-        previewView.sampleBufferDisplayLayer.videoGravity = .resizeAspectFill
-        previewView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        previewView.frame = previewController.view.bounds
-        previewController.view.addSubview(previewView)
-        track.add(videoRenderer: previewView)
+        track.add(videoRenderer: previewController)
+        track.add(videoRenderer: videoCallController)
         
         return previewController
     }
@@ -44,14 +28,13 @@ struct PiPView: UIViewControllerRepresentable {
         let contentSource = AVPictureInPictureController.ContentSource(activeVideoCallSourceView: previewController.view, contentViewController: videoCallController)
         let controller = AVPictureInPictureController(contentSource: contentSource)
         controller.canStartPictureInPictureAutomaticallyFromInline = true
-        controller.setValue(1, forKey: "controlsStyle")
         
         let coordinator = Coordinator(controller: controller)
         controller.delegate = coordinator
         return coordinator
     }
     
-    class Coordinator: NSObject, AVPictureInPictureControllerDelegate {
+    final class Coordinator: NSObject, AVPictureInPictureControllerDelegate {
         private let controller: AVPictureInPictureController
         
         init(controller: AVPictureInPictureController) {
@@ -63,6 +46,48 @@ struct PiPView: UIViewControllerRepresentable {
     }
 }
 
+final class PreviewViewController: UIViewController, VideoRenderer {
+    private lazy var renderingView = SampleRenderingView()
+    
+    override func loadView() {
+        view = renderingView
+    }
+    
+    var isAdaptiveStreamEnabled: Bool { true }
+    var adaptiveStreamSize: CGSize { view.bounds.size }
+
+    func render(frame: LiveKit.VideoFrame) {
+        if let sampleBuffer = frame.toCMSampleBuffer() {
+            Task { @MainActor in
+                renderingView.sampleBufferDisplayLayer.sampleBufferRenderer.enqueue(sampleBuffer)
+                view.transform = CGAffineTransform(rotationAngle: frame.rotation.rotationAngle)
+            }
+        }
+    }
+}
+
+final class VideoCallViewController: AVPictureInPictureVideoCallViewController, VideoRenderer {
+    private lazy var renderingView = SampleRenderingView()
+    
+    override func loadView() {
+        view = renderingView
+        // or add more subviews...
+    }
+    
+    var isAdaptiveStreamEnabled: Bool { true }
+    var adaptiveStreamSize: CGSize { view.bounds.size }
+
+    func render(frame: LiveKit.VideoFrame) {
+        if let sampleBuffer = frame.toCMSampleBuffer() {
+            Task { @MainActor in
+                renderingView.sampleBufferDisplayLayer.sampleBufferRenderer.enqueue(sampleBuffer)
+                view.transform = CGAffineTransform(rotationAngle: frame.rotation.rotationAngle)
+                preferredContentSize = frame.rotatedSize
+            }
+        }
+    }
+}
+
 final class SampleRenderingView: UIView {
     override class var layerClass: AnyClass {
         AVSampleBufferDisplayLayer.self
@@ -70,32 +95,6 @@ final class SampleRenderingView: UIView {
     
     var sampleBufferDisplayLayer: AVSampleBufferDisplayLayer {
         layer as! AVSampleBufferDisplayLayer
-    }
-    
-    let onRender: (LiveKit.VideoFrame) -> Void
-
-    init(onRender: @MainActor @escaping (LiveKit.VideoFrame) -> Void) {
-        self.onRender = onRender
-        super.init(frame: .zero)
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-}
-
-extension SampleRenderingView: VideoRenderer {
-    var isAdaptiveStreamEnabled: Bool { true }
-    var adaptiveStreamSize: CGSize { bounds.size }
-    func set(size _: CGSize) {}
-
-    func render(frame: LiveKit.VideoFrame) {
-        if let sampleBuffer = frame.toCMSampleBuffer() {
-            Task { @MainActor in
-                sampleBufferDisplayLayer.sampleBufferRenderer.enqueue(sampleBuffer)
-                onRender(frame)
-            }
-        }
     }
 }
 
