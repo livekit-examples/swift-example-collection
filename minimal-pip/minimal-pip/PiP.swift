@@ -11,6 +11,7 @@ import LiveKit
 
 struct PiPView: UIViewControllerRepresentable {
     let track: VideoTrack
+    let pip: Bool
     
     @State private var previewController = PreviewViewController()
     @State private var videoCallController = VideoCallViewController()
@@ -22,12 +23,15 @@ struct PiPView: UIViewControllerRepresentable {
         return previewController
     }
     
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {}
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
+        context.coordinator.toggle()
+    }
     
     func makeCoordinator() -> Coordinator {
         let contentSource = AVPictureInPictureController.ContentSource(activeVideoCallSourceView: previewController.view, contentViewController: videoCallController)
         let controller = AVPictureInPictureController(contentSource: contentSource)
         controller.canStartPictureInPictureAutomaticallyFromInline = true
+        controller.setValue(1, forKey: "controlsStyle") // optional, display close/fullscreen buttons
         
         let coordinator = Coordinator(controller: controller)
         controller.delegate = coordinator
@@ -41,6 +45,14 @@ struct PiPView: UIViewControllerRepresentable {
             self.controller = controller
             super.init()
         }
+        
+        func toggle() {
+            if controller.isPictureInPictureActive {
+                controller.stopPictureInPicture()
+            } else {
+                controller.startPictureInPicture()
+            }
+        }
 
         // Implement delegate methods if needed...
     }
@@ -50,6 +62,7 @@ final class PreviewViewController: UIViewController, VideoRenderer {
     private lazy var renderingView = SampleRenderingView()
     
     override func loadView() {
+        renderingView.sampleBufferDisplayLayer.videoGravity = .resizeAspectFill
         view = renderingView
     }
     
@@ -60,7 +73,7 @@ final class PreviewViewController: UIViewController, VideoRenderer {
         if let sampleBuffer = frame.toCMSampleBuffer() {
             Task { @MainActor in
                 renderingView.sampleBufferDisplayLayer.sampleBufferRenderer.enqueue(sampleBuffer)
-                view.transform = CGAffineTransform(rotationAngle: frame.rotation.rotationAngle)
+                renderingView.sampleBufferDisplayLayer.setAffineTransform(CGAffineTransform(rotationAngle: frame.rotation.rotationAngle))
             }
         }
     }
@@ -70,6 +83,7 @@ final class VideoCallViewController: AVPictureInPictureVideoCallViewController, 
     private lazy var renderingView = SampleRenderingView()
     
     override func loadView() {
+        renderingView.sampleBufferDisplayLayer.videoGravity = .resizeAspectFill
         view = renderingView
         // or add more subviews...
     }
@@ -81,7 +95,7 @@ final class VideoCallViewController: AVPictureInPictureVideoCallViewController, 
         if let sampleBuffer = frame.toCMSampleBuffer() {
             Task { @MainActor in
                 renderingView.sampleBufferDisplayLayer.sampleBufferRenderer.enqueue(sampleBuffer)
-                view.transform = CGAffineTransform(rotationAngle: frame.rotation.rotationAngle)
+                renderingView.sampleBufferDisplayLayer.setAffineTransform(CGAffineTransform(rotationAngle: frame.rotation.rotationAngle))
                 preferredContentSize = frame.rotatedSize
             }
         }
