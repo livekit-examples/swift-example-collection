@@ -18,7 +18,7 @@ import LiveKit
 import LiveKitKrispNoiseFilter
 import SwiftUI
 
-// Keep a global instance of the filter
+// 1. Keep a global instance of the filter
 let filter = LiveKitKrispNoiseFilter()
 
 struct ContentView: View {
@@ -43,26 +43,16 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 10) {
             Text("Krisp Noise Filter Example")
-                .font(.largeTitle)
+                .font(.title)
 
             Text("Connection state: \(String(describing: room.connectionState))")
 
             Form {
-                Section("Connect to Room") {
-                    TextField("URL", text: $url)
-                    TextField("Token", text: $token)
-                }.disabled(room.connectionState != .disconnected)
+                Section("1. Connect to Room") {
+                    TextField("URL", text: $url).disabled(room.connectionState != .disconnected)
 
-                Section("Publish") {
-                    Toggle("Mic enabled", isOn: $isMicEnabled)
-                }.disabled(room.connectionState != .connected)
+                    TextField("Token", text: $token).disabled(room.connectionState != .disconnected)
 
-                Section("Audio processing") {
-                    Toggle("Krisp noise filter", isOn: $isFilterEnabled)
-                    Toggle("Apple voice processing", isOn: $isAppleVoiceProcessingEnabled)
-                }.disabled(room.connectionState != .connected)
-
-                Section {
                     Button(buttonTitle) {
                         Task {
                             if room.connectionState == .disconnected {
@@ -71,16 +61,24 @@ struct ContentView: View {
                                 await room.disconnect()
                             }
                         }
-                    }
+                    }.disabled(room.connectionState == .connecting)
                 }
-                .disabled(room.connectionState == .connecting)
+
+                Section("2. Publish audio") {
+                    Toggle("Mic enabled", isOn: $isMicEnabled)
+                }.disabled(room.connectionState != .connected)
+
+                Section("3. Toggle audio processing") {
+                    Toggle("Krisp noise filter", isOn: $isFilterEnabled)
+                    Toggle("Apple voice processing", isOn: $isAppleVoiceProcessingEnabled)
+                }.disabled(room.connectionState != .connected)
             }
             .formStyle(.grouped)
         }
         .padding()
         .onAppear(perform: {
             Task {
-                // Attach filter to Room (Important)
+                // 2. Attach filter to Room before connecting (Important)
                 room.add(delegate: filter)
             }
         })
@@ -109,7 +107,7 @@ struct ContentView: View {
             }
         }
         .onChange(of: isFilterEnabled) { _, newValue in
-            // Dynamically attach filter
+            // 3. Attach filter to audio processing
             AudioManager.shared.capturePostProcessingDelegate = newValue ? filter : nil
         }
         .onChange(of: isAppleVoiceProcessingEnabled) { _, newValue in
