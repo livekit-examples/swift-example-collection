@@ -56,7 +56,11 @@ struct ContentView: View {
                     Button(buttonTitle) {
                         Task {
                             if room.connectionState == .disconnected {
-                                try await room.connect(url: url, token: token)
+                                do {
+                                    try await room.connect(url: url, token: token)
+                                } catch {
+                                    print("Connect room error: \(error.localizedDescription)")
+                                }
                             } else if room.connectionState == .connected {
                                 await room.disconnect()
                             }
