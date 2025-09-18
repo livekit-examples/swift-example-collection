@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-import LiveKit
-import SwiftUI
+import Foundation
+import UIKit
 
-@main
-struct CallKitExampleApp: App {
-    @UIApplicationDelegateAdaptor private var appDelegate: AppDelegate
-
-    init() {
-        LiveKitSDK.setLoggerStandardOutput()
-    }
-
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_: UIApplication, didFinishLaunchingWithOptions _: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        // Initialize PushManager to handle VoIP push notifications
+        _ = CallManager.shared
+        return true
     }
 }
