@@ -43,6 +43,7 @@ class CallManager: NSObject, ObservableObject {
     // State
     @Published var callState: CallState = .idle
     @Published var voipToken: String?
+    @Published var activeCallUUID: UUID?
 
     @AppStorage("url") var url: String = ""
     @AppStorage("token") var token: String = ""
@@ -68,8 +69,6 @@ class CallManager: NSObject, ObservableObject {
 
     let room = Room()
 
-    private var activeCallUUID: UUID?
-
     var hasActiveCall: Bool {
         switch callState {
         case .activeIncoming, .activeOutgoing, .connected:
@@ -86,9 +85,10 @@ class CallManager: NSObject, ObservableObject {
         pushRegistry.delegate = self
         _ = provider
 
-        // Set auto-config off
+        // Set audio session auto-config off
         AudioManager.shared.audioSession.isAutomaticConfigurationEnabled = false
 
+        // Set audio engine off
         do {
             try AudioManager.shared.setEngineAvailability(.none)
         } catch {
@@ -98,9 +98,6 @@ class CallManager: NSObject, ObservableObject {
 
     func startCall(handle: String) async {
         let callUUID = UUID()
-        Task { @MainActor in
-            activeCallUUID = callUUID
-        }
 
         let handle = CXHandle(type: .generic, value: handle)
         let startCallAction = CXStartCallAction(call: callUUID, handle: handle)
@@ -109,22 +106,31 @@ class CallManager: NSObject, ObservableObject {
         do {
             try await callController.request(transaction)
             print("Started call")
+
+            Task { @MainActor in
+                activeCallUUID = callUUID
+            }
         } catch {
             print("Failed to start call: \(error)")
         }
     }
 
     func endCall() async {
-        guard let callUUID = activeCallUUID else { return }
+        Task { @MainActor in
+            // Read `activeCallUUID` on main thread
+            guard let callUUID = activeCallUUID else { return }
 
-        let endCallAction = CXEndCallAction(call: callUUID)
-        let transaction = CXTransaction(action: endCallAction)
+            Task {
+                let endCallAction = CXEndCallAction(call: callUUID)
+                let transaction = CXTransaction(action: endCallAction)
 
-        do {
-            try await callController.request(transaction)
-            print("Ended call")
-        } catch {
-            print("Failed to end call: \(error)")
+                do {
+                    try await callController.request(transaction)
+                    print("Ended call")
+                } catch {
+                    print("Failed to end call: \(error)")
+                }
+            }
         }
     }
 
@@ -143,9 +149,9 @@ class CallManager: NSObject, ObservableObject {
 
     // NOTE: Using sync version for background mode compatibility
     func reportIncomingCallSync(from callerId: String, callerName: String, completion: @escaping @Sendable ((any Error)?) -> Void) {
-        let callUUID = UUID()
-        activeCallUUID = callUUID
+        logger.debug("Incoming call")
 
+        let callUUID = UUID()
         let callUpdate = CXCallUpdate()
         callUpdate.remoteHandle = CXHandle(type: .generic, value: callerId)
         callUpdate.hasVideo = false
@@ -155,6 +161,7 @@ class CallManager: NSObject, ObservableObject {
 
         Task { @MainActor in
             self.callState = .activeIncoming
+            self.activeCallUUID = callUUID
         }
     }
 }
@@ -178,16 +185,16 @@ extension CallManager {
 
 extension CallManager: CXProviderDelegate {
     func providerDidReset(_: CXProvider) {
-        logger.debug("CXProvider did reset")
+        logger.debug("Did reset")
 
         Task { @MainActor in
+            self.activeCallUUID = nil
             self.callState = .idle
         }
-        activeCallUUID = nil
     }
 
     func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
-        logger.debug("CXProvider call start")
+        logger.debug("Call starting...")
 
         Task { @MainActor in
             self.callState = .activeOutgoing
@@ -206,74 +213,94 @@ extension CallManager: CXProviderDelegate {
                 action.fulfill()
             } catch {
                 logger.critical("Failed to connect to room with error: \(error)")
+                action.fail()
 
                 Task { @MainActor in
                     self.callState = .errored(error)
+                    self.activeCallUUID = nil
                 }
-
-                action.fulfill()
             }
         }
     }
 
     func provider(_: CXProvider, perform action: CXAnswerCallAction) {
-        logger.debug("CXProvider answer call")
-
-        Task { @MainActor in
-            self.callState = .connected
-        }
+        logger.debug("Answer call")
 
         Task {
             do {
-                logger.debug("Connected to room")
-                action.fulfill()
                 try await connectToRoom()
+                logger.debug("Connected to room")
+
+                Task { @MainActor in
+                    self.callState = .connected
+                }
+
+                action.fulfill()
             } catch {
                 logger.critical("Failed to connect to room with error: \(error)")
-                action.fulfill()
+
+                Task { @MainActor in
+                    self.callState = .errored(error)
+                }
+
+                action.fail()
             }
         }
     }
 
     func provider(_: CXProvider, perform action: CXEndCallAction) {
-        logger.debug("CXProvider end call")
-
-        Task { @MainActor in
-            self.activeCallUUID = nil
-            self.callState = .idle
-        }
+        logger.debug("End call")
 
         Task {
             await disconnectFromRoom()
             action.fulfill()
+
+            Task { @MainActor in
+                self.activeCallUUID = nil
+
+                if case .errored = self.callState {
+                    // Keep the errored state, for failed incoming cases.
+                } else {
+                    self.callState = .idle
+                }
+            }
         }
     }
 
     func provider(_: CXProvider, perform action: CXSetMutedCallAction) {
-        logger.debug("CXProvider muted call")
-
-        // TODO: Handle mute
-        action.fulfill()
+        Task {
+            do {
+                try await room.localParticipant.setMicrophone(enabled: !action.isMuted)
+                logger.debug("Muted call: \(action.isMuted)")
+                action.fulfill()
+            } catch {
+                logger.critical("Failed to set microphone enabled: \(!action.isMuted) with error: \(error.localizedDescription)")
+                action.fail()
+            }
+        }
     }
 
-    func provider(_: CXProvider, didActivate _: AVAudioSession) {
+    func provider(_: CXProvider, didActivate session: AVAudioSession) {
         // Audio session can now be activated.
-        logger.debug("CXProvider did activate session")
+        logger.debug("Did activate session")
 
         do {
-            let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.mixWithOthers])
-
             try AudioManager.shared.setEngineAvailability(.default)
-
         } catch {
-            print("Failed to set engine permissions: \(error.localizedDescription)")
+            logger.critical("Failed to set engine availability: \(error.localizedDescription)")
         }
     }
 
     func provider(_: CXProvider, didDeactivate _: AVAudioSession) {
         // Audio session will need to be deactivated.
-        logger.debug("CXProvider did deactivate session")
+        logger.debug("Did deactivate session")
+
+        do {
+            try AudioManager.shared.setEngineAvailability(.none)
+        } catch {
+            logger.critical("Failed to set engine availability: \(error.localizedDescription)")
+        }
     }
 }
 
@@ -283,7 +310,8 @@ extension CallManager: PKPushRegistryDelegate {
     func pushRegistry(_: PKPushRegistry, didUpdate pushCredentials: PKPushCredentials, for type: PKPushType) {
         guard type == .voIP else { return }
         let token = pushCredentials.token.map { String(format: "%02x", $0) }.joined()
-        logger.info("token: \(token)")
+
+        logger.info("Push token updated: \(token)")
 
         Task { @MainActor in
             self.voipToken = token
@@ -292,7 +320,7 @@ extension CallManager: PKPushRegistryDelegate {
 
     func pushRegistry(_: PKPushRegistry, didInvalidatePushTokenFor type: PKPushType) {
         guard type == .voIP else { return }
-        logger.info("VoIP Push Token invalidated")
+        logger.info("Push Token invalidated")
 
         Task { @MainActor in
             voipToken = nil
@@ -305,7 +333,17 @@ extension CallManager: PKPushRegistryDelegate {
             return
         }
 
-        logger.info("Received VoIP push with payload: \(payload.dictionaryPayload)")
+        logger.info("Received push with payload: \(payload.dictionaryPayload)")
+
+        /// NOTE: I've observed that the mic cannot initialized if we don't set .playAndRecord here,
+        /// which appears like a bug in my opinion, since ``CallManager/provider(_:didActivate:)``
+        /// should be invoked at the right time instead of having to set the session category here.
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.mixWithOthers])
+        } catch {
+            print("Failed to configure AVAudioSession: \(error.localizedDescription)")
+        }
 
         // Extract caller information from payload
         let callerId = payload.dictionaryPayload["callerId"] as? String ?? UUID().uuidString

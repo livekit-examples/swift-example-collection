@@ -35,8 +35,45 @@ struct ContentView: View {
 
             Form {
                 Section("States") {
-                    Text("Room state: \(String(describing: room.connectionState))")
-                    Text("Call state: \(String(describing: callManager.callState))")
+                    HStack {
+                        HStack(spacing: 8) {
+                            Image(systemName: roomStateIcon(for: room.connectionState))
+                                .foregroundColor(roomStateColor(for: room.connectionState))
+                            Text("Room state")
+                                .fontWeight(.medium)
+                        }
+                        Spacer()
+                        Text(String(describing: room.connectionState))
+                            .foregroundColor(.secondary)
+                            .font(.caption)
+                    }
+
+                    HStack {
+                        HStack(spacing: 8) {
+                            Image(systemName: callStateIcon(for: callManager.callState))
+                                .foregroundColor(callStateColor(for: callManager.callState))
+                            Text("Call state")
+                                .fontWeight(.medium)
+                        }
+                        Spacer()
+                        Text(String(describing: callManager.callState))
+                            .foregroundColor(.secondary)
+                            .font(.caption)
+                    }
+
+                    HStack {
+                        HStack(spacing: 8) {
+                            Image(systemName: "phone.badge")
+                                .foregroundColor(.blue)
+                            Text("Call ID")
+                                .fontWeight(.medium)
+                        }
+                        Spacer()
+                        Text((callManager.activeCallUUID != nil) ? callManager.activeCallUUID!.uuidString : "Not in a call")
+                            .foregroundColor(.secondary)
+                            .font(.caption)
+                            .monospaced()
+                    }
                 }
 
                 Section("1. Room for testing") {
@@ -129,6 +166,66 @@ struct ContentView: View {
                     showTokenCopiedToast = false
                 }
             }
+        }
+    }
+
+    private func roomStateIcon(for state: ConnectionState) -> String {
+        switch state {
+        case .disconnected:
+            return "network.slash"
+        case .connecting:
+            return "bolt"
+        case .connected:
+            return "network"
+        case .reconnecting:
+            return "arrow.triangle.2.circlepath"
+        @unknown default:
+            return "questionmark.circle"
+        }
+    }
+
+    private func roomStateColor(for state: ConnectionState) -> Color {
+        switch state {
+        case .disconnected:
+            return .red
+        case .connecting:
+            return .orange
+        case .connected:
+            return .green
+        case .reconnecting:
+            return .blue
+        @unknown default:
+            return .gray
+        }
+    }
+
+    private func callStateIcon(for state: CallState) -> String {
+        switch state {
+        case .idle:
+            "phone"
+        case .errored:
+            "phone.badge.exclamationmark"
+        case .activeIncoming:
+            "phone.arrow.down.left"
+        case .activeOutgoing:
+            "phone.arrow.up.right"
+        case .connected:
+            "phone.connection"
+        }
+    }
+
+    private func callStateColor(for state: CallState) -> Color {
+        switch state {
+        case .idle:
+            .gray
+        case .errored:
+            .red
+        case .activeIncoming:
+            .blue
+        case .activeOutgoing:
+            .orange
+        case .connected:
+            .green
         }
     }
 }
