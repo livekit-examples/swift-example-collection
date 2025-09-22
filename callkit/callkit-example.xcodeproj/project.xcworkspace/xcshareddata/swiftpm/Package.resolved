@@ -1,13 +1,13 @@
 {
-  "originHash" : "727398c0b292ba4052728cc638944a00ac7067321e283dedd2630f3e865fa408",
+  "originHash" : "b8d94a83fce90f5c0764d2192ef87c55f1dfcf81e5fd34f2724daac3664637d9",
   "pins" : [
     {
       "identity" : "client-sdk-swift",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/livekit/client-sdk-swift",
       "state" : {
-        "revision" : "d4c1370922f7f13df1d889ad408bb2298afa638b",
-        "version" : "2.7.2"
+        "branch" : "hiroshi/audio-engine-io-perms",
+        "revision" : "e0ca20dd9819fd504b137c363beabcb9888e5af1"
       }
     },
     {
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/livekit/webrtc-xcframework.git",
       "state" : {
-        "revision" : "609aa5e7dd818ba85eb483153b572fd698785a40",
-        "version" : "137.7151.4"
+        "revision" : "b082521d7d56c4474d84e90274fb3360dcf11291",
+        "version" : "137.7151.8"
       }
     }
   ],
