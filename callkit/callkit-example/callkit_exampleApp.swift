@@ -19,10 +19,9 @@ import SwiftUI
 
 @main
 struct CallKitExampleApp: App {
-    @UIApplicationDelegateAdaptor private var appDelegate: AppDelegate
-
     init() {
         LiveKitSDK.setLoggerStandardOutput()
+        _ = CallManager.shared
     }
 
     var body: some Scene {
