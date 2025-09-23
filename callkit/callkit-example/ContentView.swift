@@ -19,8 +19,8 @@ import Logging
 import SwiftUI
 
 struct ContentView: View {
-    @ObservedObject private var callManager = CallManager.shared
-    @StateObject var room: Room = CallManager.shared.room
+    @ObservedObject var callManager = CallManager.shared
+    @ObservedObject var room: Room = CallManager.shared.room
 
     @AppStorage("url") var url: String = ""
     @AppStorage("token") var token: String = ""

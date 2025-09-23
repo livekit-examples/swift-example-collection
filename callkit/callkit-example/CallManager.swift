@@ -51,18 +51,7 @@ class CallManager: NSObject, ObservableObject {
     // CallKit
     private let callController = CXCallController()
 
-    private lazy var provider: CXProvider = {
-        // Setup CallKit
-        let configuration = CXProviderConfiguration()
-        configuration.supportedHandleTypes = [.generic]
-        configuration.maximumCallsPerCallGroup = 1
-        configuration.maximumCallGroups = 1
-        configuration.supportsVideo = false
-        let provider = CXProvider(configuration: configuration)
-        provider.setDelegate(self, queue: .global(qos: .default))
-        logger.info("CXProvider setup complete")
-        return provider
-    }()
+    private let provider: CXProvider
 
     // PushKit
     private let pushRegistry = PKPushRegistry(queue: nil)
@@ -79,11 +68,19 @@ class CallManager: NSObject, ObservableObject {
     }
 
     override private init() {
+        // Setup CallKit
+        let configuration = CXProviderConfiguration()
+        configuration.supportedHandleTypes = [.generic]
+        configuration.maximumCallsPerCallGroup = 1
+        configuration.maximumCallGroups = 1
+        configuration.supportsVideo = false
+        provider = CXProvider(configuration: configuration)
+
         // Setup PushKit
         pushRegistry.desiredPushTypes = [.voIP]
         super.init()
+        provider.setDelegate(self, queue: .global(qos: .default))
         pushRegistry.delegate = self
-        _ = provider
 
         // Set audio session auto-config off
         AudioManager.shared.audioSession.isAutomaticConfigurationEnabled = false
@@ -105,13 +102,13 @@ class CallManager: NSObject, ObservableObject {
 
         do {
             try await callController.request(transaction)
-            print("Started call")
+            logger.debug("Started call")
 
             Task { @MainActor in
                 activeCallUUID = callUUID
             }
         } catch {
-            print("Failed to start call: \(error)")
+            logger.critical("Failed to start call: \(error)")
         }
     }
 
@@ -126,9 +123,9 @@ class CallManager: NSObject, ObservableObject {
 
                 do {
                     try await callController.request(transaction)
-                    print("Ended call")
+                    logger.debug("Ended call")
                 } catch {
-                    print("Failed to end call: \(error)")
+                    logger.critical("Failed to end call: \(error)")
                 }
             }
         }
@@ -342,7 +339,7 @@ extension CallManager: PKPushRegistryDelegate {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.playAndRecord, mode: .voiceChat, options: [.mixWithOthers])
         } catch {
-            print("Failed to configure AVAudioSession: \(error.localizedDescription)")
+            logger.critical("Failed to configure AVAudioSession: \(error.localizedDescription)")
         }
 
         // Extract caller information from payload
