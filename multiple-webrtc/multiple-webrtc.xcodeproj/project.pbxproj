@@ -377,8 +377,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/livekit/client-sdk-swift";
 			requirement = {
-				branch = "prefixed-webrtc-package";
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.8.1;
 			};
 		};
 		68AC1DBF2B7CF564004B8D4E /* XCRemoteSwiftPackageReference "Specs" */ = {
