@@ -31,13 +31,21 @@ typealias PlatformColor = NSColor
 
 struct ContentView: View {
     @State private var mock = MockVideoSource()
+    @Environment(\.displayScale) private var displayScale
 
     var body: some View {
         VStack(spacing: 20) {
             Text("LiveKitSDK: v\(LiveKitSDK.version)")
-            SwiftUIVideoView(mock.track, renderMode: .sampleBuffer)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .frame(minWidth: 100, minHeight: 100)
+            GeometryReader { geometry in
+                SwiftUIVideoView(mock.track, renderMode: .sampleBuffer)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .onChange(of: geometry.size, initial: true) { _, newSize in
+                        mock.setBufferSize(CGSize(
+                            width: newSize.width * displayScale,
+                            height: newSize.height * displayScale
+                        ))
+                    }
+            }
         }
         .padding()
     }
@@ -50,7 +58,13 @@ struct ContentView: View {
 @Observable
 final class MockVideoSource {
     let track: LocalVideoTrack
+    private var bufferSize: CGSize = .init(width: 640, height: 360)
     private var timer: Timer?
+
+    func setBufferSize(_ size: CGSize) {
+        bufferSize = size
+    }
+
     private var frameCount: Int = 0
     private var currentFps: Int = 0
     private var framesThisSecond: Int = 0
@@ -69,7 +83,8 @@ final class MockVideoSource {
         timer = Timer.scheduledTimer(withTimeInterval: 1.0 / fps, repeats: true) { [weak self] _ in
             guard
                 let self,
-                let capturer = track.capturer as? BufferCapturer
+                let capturer = track.capturer as? BufferCapturer,
+                bufferSize.width > 0, bufferSize.height > 0
             else { return }
 
             // Update FPS counter every second
@@ -86,7 +101,7 @@ final class MockVideoSource {
             let hue = CGFloat(frameCount % 150) / 150.0
             let color = PlatformColor(hue: hue, saturation: 1.0, brightness: 0.8, alpha: 1.0)
 
-            guard let buffer = Self.makePixelBuffer(color: color, frameCount: frameCount, fps: currentFps, size: CGSize(width: 640, height: 360))
+            guard let buffer = Self.makePixelBuffer(color: color, frameCount: frameCount, fps: currentFps, size: bufferSize)
             else { return }
 
             capturer.capture(buffer)
@@ -132,22 +147,36 @@ final class MockVideoSource {
         ctx.setFillColor(color.cgColor)
         ctx.fill(CGRect(origin: .zero, size: size))
 
-        // Draw frame counter and FPS
-        let text = "Frame: \(frameCount) | FPS: \(fps)" as CFString
-        let font = CTFontCreateUIFontForLanguage(.system, 18, nil)!
+        // Draw frame counter, FPS, and resolution (font size ~5% of height)
+        let fontSize = max(12, min(size.width, size.height) * 0.05)
+        let font = CTFontCreateUIFontForLanguage(.system, fontSize, nil)!
         let attributes: [CFString: Any] = [
             kCTFontAttributeName: font,
             kCTForegroundColorAttributeName: CGColor(gray: 1.0, alpha: 1.0),
         ]
-        let attributedString = CFAttributedStringCreate(nil, text, attributes as CFDictionary)!
-        let line = CTLineCreateWithAttributedString(attributedString)
 
-        // Center the text
-        let textBounds = CTLineGetBoundsWithOptions(line, [])
-        let x = (size.width - textBounds.width) / 2
-        let y = (size.height - textBounds.height) / 2
-        ctx.textPosition = CGPoint(x: x, y: y)
-        CTLineDraw(line, ctx)
+        let line1Text = "Frame: \(frameCount) | FPS: \(fps)" as CFString
+        let line1Attr = CFAttributedStringCreate(nil, line1Text, attributes as CFDictionary)!
+        let line1 = CTLineCreateWithAttributedString(line1Attr)
+
+        let line2Text = "\(Int(size.width))×\(Int(size.height))" as CFString
+        let line2Attr = CFAttributedStringCreate(nil, line2Text, attributes as CFDictionary)!
+        let line2 = CTLineCreateWithAttributedString(line2Attr)
+
+        let line1Bounds = CTLineGetBoundsWithOptions(line1, [])
+        let line2Bounds = CTLineGetBoundsWithOptions(line2, [])
+        let lineSpacing: CGFloat = fontSize * 0.3
+        let totalHeight = line1Bounds.height + line2Bounds.height + lineSpacing
+
+        // Center both lines
+        let y1 = (size.height + totalHeight) / 2 - line1Bounds.height
+        let y2 = y1 - lineSpacing - line2Bounds.height
+
+        ctx.textPosition = CGPoint(x: (size.width - line1Bounds.width) / 2, y: y1)
+        CTLineDraw(line1, ctx)
+
+        ctx.textPosition = CGPoint(x: (size.width - line2Bounds.width) / 2, y: y2)
+        CTLineDraw(line2, ctx)
 
         return buffer
     }
