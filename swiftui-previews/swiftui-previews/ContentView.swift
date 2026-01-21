@@ -1,0 +1,44 @@
+/*
+ * Copyright 2026 LiveKit
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import LiveKit
+import SwiftUI
+
+struct ContentView: View {
+    @State private var mockVideoSource = MockVideoSource()
+    @Environment(\.displayScale) private var displayScale
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("LiveKitSDK: v\(LiveKitSDK.version)")
+            GeometryReader { geometry in
+                SwiftUIVideoView(mockVideoSource.track, renderMode: .sampleBuffer)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .onChange(of: geometry.size, initial: true) { _, newSize in
+                        mockVideoSource.setBufferSize(CGSize(
+                            width: newSize.width * displayScale,
+                            height: newSize.height * displayScale
+                        ))
+                    }
+            }
+        }
+        .padding()
+    }
+}
+
+#Preview {
+    ContentView()
+}
