@@ -99,7 +99,7 @@ final class MockVideoSource {
 
             // Cycle hue over ~5 seconds (at 30fps = 150 frames per cycle)
             let hue = CGFloat(frameCount % 150) / 150.0
-            let color = PlatformColor(hue: hue, saturation: 1.0, brightness: 0.8, alpha: 1.0)
+            let color = PlatformColor(hue: hue, saturation: 1.0, brightness: 1.0, alpha: 1.0)
 
             guard let buffer = Self.makePixelBuffer(color: color, frameCount: frameCount, fps: currentFps, size: bufferSize)
             else { return }
@@ -139,7 +139,9 @@ final class MockVideoSource {
                 bitsPerComponent: 8,
                 bytesPerRow: CVPixelBufferGetBytesPerRow(buffer),
                 space: CGColorSpaceCreateDeviceRGB(),
-                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue
+                bitmapInfo: CGBitmapInfo.byteOrder32Little.union(
+                    CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedFirst.rawValue)
+                ).rawValue
             )
         else { return nil }
 
