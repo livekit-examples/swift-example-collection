@@ -48,13 +48,31 @@ Transmission maps to the microphone:
 * `channelManager(_:channelUUID:didBeginTransmittingFrom:)` calls `setMicrophone(enabled: true)`. The engine starts capturing once the system activates the session.
 * `channelManager(_:channelUUID:didEndTransmittingFrom:)` calls `setMicrophone(enabled: false)`.
 
+### Background lifecycle
+
+The PushToTalk channel outlives the LiveKit room connection. iOS keeps the app running only while the system audio session is active, so once a transmission or reception ends and the app is in the background, the app is suspended. The server then drops the participant after missed pings, while the channel stays joined. The app wakes again on a talk press from the system UI or on a PushToTalk push, and the SDK reconnects.
+
+A push sets the active remote participant without the app calling `setActiveRemoteParticipant(_:channelUUID:)`. The example records the pushed speaker and compares it with the room after every reconnect, so the system UI is cleared even if the talker stopped before the room reconnected.
+
+### Testing background receive
+
+Use the [Push Notification Console](https://developer.apple.com/documentation/usernotifications/testing-notifications-using-the-push-notification-console) to send a push to the token shown in the app:
+
+* `apns-push-type`: `pushtotalk` (the console sets the topic to `<bundle ID>.voip-ptt`)
+* `apns-expiration`: `0`
+* `apns-priority`: `10`
+* Payload: `{"aps": {}, "activeSpeaker": "Name"}`
+
+Lock the device and wait for the app to be suspended before sending the push.
+
 ### What a real app needs server side
 
 This example only logs the ephemeral PushToTalk push token and shows it in the app. It does not send pushes. To receive audio while the app is in the background or not running, a real app also needs:
 
 * **Token registration.** Send the token from `channelManager(_:receivedEphemeralPushToken:)` to your server along with the channel and user. The token is only valid while the app is in the channel, so register it each time this method is called.
+* **Channel membership.** Track who is in a channel separately from LiveKit room presence, since suspended members drop out of the room.
 * **Floor control.** Decide who may talk in a channel. When someone starts talking, send a PushToTalk push to the other members, for example with an `activeSpeaker` key. This example's `incomingPushResult(channelManager:channelUUID:pushPayload:)` returns `.activeRemoteParticipant` for that key and `.leaveChannel` otherwise.
-* **APNs delivery.** Send the push with the `pushtotalk` push type, the `<bundle ID>.voip-ptt` topic and priority 10.
+* **APNs delivery.** Send the push with the `pushtotalk` push type, the `<bundle ID>.voip-ptt` topic, priority 10 and expiration 0.
 * **Room tokens.** Issue LiveKit tokens for the channel's room. A channel can be restored after the app relaunches, so the app may need to fetch a fresh token instead of reusing a stored one.
 
 ### References
