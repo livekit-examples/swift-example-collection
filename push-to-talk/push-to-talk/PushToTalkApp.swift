@@ -21,6 +21,8 @@ import SwiftUI
 struct PushToTalkApp: App {
     init() {
         LiveKitSDK.setLogLevel(.debug)
+        // The channel manager has to exist at launch so the system can restore a channel and deliver pushes.
+        _ = PushToTalkManager.shared
     }
 
     var body: some Scene {
