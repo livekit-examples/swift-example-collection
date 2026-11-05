@@ -88,11 +88,11 @@ struct ContentView: View {
         if manager.isTransmitting {
             return "You"
         }
-        return manager.activeSpeaker?.displayName ?? "No one"
+        return manager.activeSpeakerName ?? "No one"
     }
 
     private var talkButton: some View {
-        let isEnabled = isJoined && room.connectionState == .connected && manager.activeSpeaker == nil
+        let isEnabled = isJoined && room.connectionState == .connected && manager.activeSpeakerName == nil
 
         return Text(manager.isTransmitting ? "Talking" : "Hold to talk")
             .font(.headline)

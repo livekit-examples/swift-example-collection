@@ -34,7 +34,7 @@ final class PushToTalkManager: NSObject, ObservableObject {
 
     @Published private(set) var channelUUID: UUID?
     @Published private(set) var isTransmitting = false
-    @Published private(set) var activeSpeaker: RemoteParticipant?
+    @Published private(set) var activeSpeakerName: String?
     @Published private(set) var pushToken: String?
 
     let room = Room()
@@ -137,18 +137,19 @@ extension PushToTalkManager {
     }
 
     private func updateActiveSpeaker() async {
-        guard let channelManager, let channelUUID else { return }
+        // Room state is stale until a reconnect after suspension completes.
+        guard let channelManager, let channelUUID, room.connectionState == .connected else { return }
 
         // Talkers keep their mic unmuted only while transmitting.
-        let speaker = room.remoteParticipants.values.first { $0.isMicrophoneEnabled() }
-        guard speaker?.identity != activeSpeaker?.identity else { return }
-        activeSpeaker = speaker
+        let speakerName = room.remoteParticipants.values.first { $0.isMicrophoneEnabled() }?.displayName
+        guard speakerName != activeSpeakerName else { return }
+        activeSpeakerName = speakerName
 
         // Setting a participant makes the system activate the audio session for playback, and nil ends it.
-        let participant = speaker.map { PTParticipant(name: $0.displayName, image: nil) }
+        let participant = speakerName.map { PTParticipant(name: $0, image: nil) }
         do {
             try await channelManager.setActiveRemoteParticipant(participant, channelUUID: channelUUID)
-            Self.logger.info("Active remote participant: \(participant?.name ?? "none")")
+            Self.logger.info("Active remote participant: \(speakerName ?? "none")")
         } catch {
             Self.logger.error("Failed to set active remote participant: \(error)")
         }
@@ -184,7 +185,7 @@ extension PushToTalkManager: PTChannelManagerDelegate {
         Task { @MainActor in
             self.channelUUID = nil
             isTransmitting = false
-            activeSpeaker = nil
+            activeSpeakerName = nil
             await room.disconnect()
         }
     }
@@ -240,6 +241,12 @@ extension PushToTalkManager: PTChannelManagerDelegate {
         guard let activeSpeaker = pushPayload["activeSpeaker"] as? String else {
             return .leaveChannel
         }
+
+        // The system shows this speaker without the app calling setActiveRemoteParticipant,
+        // so record it for updateActiveSpeaker to clear once the room reconnects.
+        Task { @MainActor in
+            activeSpeakerName = activeSpeaker
+        }
         return .activeRemoteParticipant(PTParticipant(name: activeSpeaker, image: nil))
     }
 
@@ -280,7 +287,12 @@ extension PushToTalkManager: RoomDelegate {
     nonisolated func room(_: Room, didUpdateConnectionState connectionState: ConnectionState, from _: ConnectionState) {
         Task { @MainActor in
             await updateServiceStatus(for: connectionState)
+            await updateActiveSpeaker()
         }
+    }
+
+    nonisolated func room(_: Room, didCompleteReconnectWithMode _: ReconnectMode) {
+        Task { @MainActor in await updateActiveSpeaker() }
     }
 
     nonisolated func room(_: Room, participant _: RemoteParticipant, didPublishTrack _: RemoteTrackPublication) {
