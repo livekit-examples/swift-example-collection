@@ -413,8 +413,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/livekit/client-sdk-swift";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.10.2;
+				kind = exactVersion;
+				version = 2.19.0;
 			};
 		};
 		68F695792C51E91A00E617C0 /* XCRemoteSwiftPackageReference "swift-krisp-noise-filter" */ = {

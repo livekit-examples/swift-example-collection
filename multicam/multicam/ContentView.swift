@@ -19,40 +19,49 @@ import LiveKit
 import SwiftUI
 
 struct ContentView: View {
-    let frontTrack = LocalVideoTrack.createCameraTrack(options: CameraCaptureOptions(position: .front))
-    let backTrack = LocalVideoTrack.createCameraTrack(options: CameraCaptureOptions(position: .back))
+    @State private var frontTrack: LocalVideoTrack?
+    @State private var backTrack: LocalVideoTrack?
 
     var body: some View {
         VStack(spacing: 0) {
-            SwiftUIVideoView(frontTrack).onTapGesture {
-                Task {
-                    do {
-                        if frontTrack.trackState == .stopped {
-                            try await frontTrack.start()
-                        } else {
-                            try await frontTrack.stop()
+            if let frontTrack {
+                SwiftUIVideoView(frontTrack).onTapGesture {
+                    Task {
+                        do {
+                            if frontTrack.trackState == .stopped {
+                                try await frontTrack.start()
+                            } else {
+                                try await frontTrack.stop()
+                            }
+                        } catch {
+                            print("Failed to toggle front track, error: \(error)")
                         }
-                    } catch {
-                        print("Failed to toggle front track, error: \(error)")
                     }
                 }
             }
-            SwiftUIVideoView(backTrack, pinchToZoomOptions: [.zoomIn, .resetOnRelease]).onTapGesture {
-                Task {
-                    do {
-                        if backTrack.trackState == .stopped {
-                            try await backTrack.start()
-                        } else {
-                            try await backTrack.stop()
+            if let backTrack {
+                SwiftUIVideoView(backTrack, pinchToZoomOptions: [.zoomIn, .resetOnRelease]).onTapGesture {
+                    Task {
+                        do {
+                            if backTrack.trackState == .stopped {
+                                try await backTrack.start()
+                            } else {
+                                try await backTrack.stop()
+                            }
+                        } catch {
+                            print("Failed to toggle back track, error: \(error)")
                         }
-                    } catch {
-                        print("Failed to toggle back track, error: \(error)")
                     }
                 }
             }
         }
         .onAppear(perform: {
             Task {
+                let frontTrack = await LocalVideoTrack.createCameraTrack(options: CameraCaptureOptions(position: .front))
+                let backTrack = await LocalVideoTrack.createCameraTrack(options: CameraCaptureOptions(position: .back))
+                self.frontTrack = frontTrack
+                self.backTrack = backTrack
+
                 // The publishing order is important.
                 // Publishing the back camera first may cause the SDK to prioritize the [Back Triple Camera] (if available),
                 // and iOS will then block the front camera, as this combination is not supported in
@@ -77,13 +86,13 @@ struct ContentView: View {
         .onDisappear(perform: {
             Task {
                 do {
-                    try await frontTrack.stop()
+                    try await frontTrack?.stop()
                     print("Stopped front track")
                 } catch {
                     print("Failed to stop front track, error: \(error)")
                 }
                 do {
-                    try await backTrack.stop()
+                    try await backTrack?.stop()
                     print("Stopped back track")
                 } catch {
                     print("Failed to stop back track, error: \(error)")
