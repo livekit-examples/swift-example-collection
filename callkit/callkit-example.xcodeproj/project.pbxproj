@@ -419,8 +419,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/livekit/client-sdk-swift";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.10.2;
+				kind = exactVersion;
+				version = 2.19.0;
 			};
 		};
 		68B7EA062E7CA70C001802FC /* XCRemoteSwiftPackageReference "swift-log" */ = {
@@ -428,7 +428,7 @@
 			repositoryURL = "https://github.com/apple/swift-log";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.6.4;
+				minimumVersion = 1.17.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

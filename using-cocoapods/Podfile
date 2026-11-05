@@ -7,10 +7,10 @@ use_frameworks! :linkage => :static
 
 target 'using-cocoapods (iOS)' do
 
-  platform :ios, '13.0'
+  platform :ios, '15.0'
 
   # Pods for using-cocoapods (iOS)
-  pod 'LiveKitClient', '2.8.1'
+  pod 'LiveKitClient', '2.19.0'
 end
 
 target 'using-cocoapods (macOS)' do
@@ -18,5 +18,21 @@ target 'using-cocoapods (macOS)' do
   platform :macos, '12.3'
 
   # Pods for using-cocoapods (macOS)
-  pod 'LiveKitClient', '2.8.1'
+  pod 'LiveKitClient', '2.19.0'
+end
+
+# Pod targets inherit the podspec minimums (iOS 13, macOS 10.15), which
+# Xcode 27 no longer accepts.
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      settings = config.build_settings
+      if settings['IPHONEOS_DEPLOYMENT_TARGET'] && settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 15.0
+        settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      end
+      if settings['MACOSX_DEPLOYMENT_TARGET'] && settings['MACOSX_DEPLOYMENT_TARGET'].to_f < 12.0
+        settings['MACOSX_DEPLOYMENT_TARGET'] = '12.0'
+      end
+    end
+  end
 end
