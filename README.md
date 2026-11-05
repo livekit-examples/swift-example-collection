@@ -12,4 +12,5 @@ For a SwiftUI example, view this repo 👉 https://github.com/livekit/client-exa
 * [**krisp-minimal**](krisp-minimal) - Demonstrates integration with Krisp enhanced noise cancellation for LiveKit Cloud projects.
 * [**minimal-pip**](minimal-pip) - Shows how to implement iOS Picture-in-Picture (PiP) functionality with custom video rendering.
 * [**callkit**](callkit) - Comprehensive example of integrating LiveKit with CallKit and PushKit for VoIP calling with proper AVAudioSession management.
+* [**push-to-talk**](push-to-talk) - Shows how to use LiveKit with Apple's PushToTalk framework, toggling the microphone on talk begin and end and reporting the active remote speaker.
 * [**custom-framework**](custom-framework) - Demonstrates how to create a custom framework that wraps the LiveKit SDK.
