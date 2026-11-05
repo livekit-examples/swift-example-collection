@@ -148,6 +148,7 @@ extension PushToTalkManager {
         let participant = speaker.map { PTParticipant(name: $0.displayName, image: nil) }
         do {
             try await channelManager.setActiveRemoteParticipant(participant, channelUUID: channelUUID)
+            Self.logger.info("Active remote participant: \(participant?.name ?? "none")")
         } catch {
             Self.logger.error("Failed to set active remote participant: \(error)")
         }
@@ -234,6 +235,8 @@ extension PushToTalkManager: PTChannelManagerDelegate {
     }
 
     nonisolated func incomingPushResult(channelManager _: PTChannelManager, channelUUID _: UUID, pushPayload: [String: Any]) -> PTPushResult {
+        Self.logger.info("Incoming push: \(pushPayload)")
+
         guard let activeSpeaker = pushPayload["activeSpeaker"] as? String else {
             return .leaveChannel
         }
