@@ -130,6 +130,7 @@ extension PushToTalkManager {
 
         do {
             try await channelManager.setServiceStatus(status, channelUUID: channelUUID)
+            Self.logger.info("Service status: \(status.rawValue)")
         } catch {
             Self.logger.error("Failed to set service status: \(error)")
         }
@@ -240,7 +241,7 @@ extension PushToTalkManager: PTChannelManagerDelegate {
     }
 
     nonisolated func channelManager(_: PTChannelManager, didActivate _: AVAudioSession) {
-        Self.logger.debug("Did activate audio session")
+        Self.logger.info("Did activate audio session")
 
         do {
             try AudioManager.shared.setEngineAvailability(.default)
@@ -250,7 +251,7 @@ extension PushToTalkManager: PTChannelManagerDelegate {
     }
 
     nonisolated func channelManager(_: PTChannelManager, didDeactivate _: AVAudioSession) {
-        Self.logger.debug("Did deactivate audio session")
+        Self.logger.info("Did deactivate audio session")
 
         do {
             try AudioManager.shared.setEngineAvailability(.none)
