@@ -50,12 +50,13 @@ struct MyRemoteVideoTrackView: View {
             .sensoryFeedback(.success, trigger: pip)
         }
         .onAppear {
-            track = LocalVideoTrack.createCameraTrack()
             Task {
-                if let cameraCapturer = track?.capturer as? CameraCapturer {
+                let track = await LocalVideoTrack.createCameraTrack()
+                self.track = track
+                if let cameraCapturer = track.capturer as? CameraCapturer {
                     cameraCapturer.isMultitaskingAccessEnabled = true
                 }
-                try await track?.start()
+                try await track.start()
             }
         }
         .onDisappear {
