@@ -55,49 +55,58 @@ struct ContentView: View {
                 }
             }
         }
-        .onAppear(perform: {
-            Task {
-                let frontTrack = await LocalVideoTrack.createCameraTrack(options: CameraCaptureOptions(position: .front))
-                let backTrack = await LocalVideoTrack.createCameraTrack(options: CameraCaptureOptions(position: .back))
-                self.frontTrack = frontTrack
-                self.backTrack = backTrack
+        // Tied to the view's appearance, so disappearing cancels setup and stops the tracks this run created.
+        .task {
+            let frontTrack = await LocalVideoTrack.createCameraTrack(options: CameraCaptureOptions(position: .front))
+            let backTrack = await LocalVideoTrack.createCameraTrack(options: CameraCaptureOptions(position: .back))
+            guard !Task.isCancelled else { return }
+            self.frontTrack = frontTrack
+            self.backTrack = backTrack
 
-                // The publishing order is important.
-                // Publishing the back camera first may cause the SDK to prioritize the [Back Triple Camera] (if available),
-                // and iOS will then block the front camera, as this combination is not supported in
-                // `AVCaptureDevice.DiscoverySession.supportedMultiCamDeviceSets` due to resource constraints.
-                // However, if you publish the front camera first, the SDK will prioritize a compatible device,
-                // such as the [Back Dual Camera], which can be used simultaneously with the front camera.
-                // You can also explicitly specify the device in CameraCaptureOptions.
-                do {
-                    try await frontTrack.start()
-                    print("Started front track")
-                } catch {
-                    print("Failed to start front track, error: \(error)")
-                }
-                do {
-                    try await backTrack.start()
-                    print("Started back track")
-                } catch {
-                    print("Failed to start back track, error: \(error)")
-                }
+            // The publishing order is important.
+            // Publishing the back camera first may cause the SDK to prioritize the [Back Triple Camera] (if available),
+            // and iOS will then block the front camera, as this combination is not supported in
+            // `AVCaptureDevice.DiscoverySession.supportedMultiCamDeviceSets` due to resource constraints.
+            // However, if you publish the front camera first, the SDK will prioritize a compatible device,
+            // such as the [Back Dual Camera], which can be used simultaneously with the front camera.
+            // You can also explicitly specify the device in CameraCaptureOptions.
+            do {
+                try await frontTrack.start()
+                print("Started front track")
+            } catch {
+                print("Failed to start front track, error: \(error)")
             }
-        })
-        .onDisappear(perform: {
-            Task {
+            do {
+                try await backTrack.start()
+                print("Started back track")
+            } catch {
+                print("Failed to start back track, error: \(error)")
+            }
+
+            // Keep the cameras running until the view disappears and cancels this task.
+            try? await Task.sleep(nanoseconds: .max)
+
+            // stop() throws CancellationError inside this cancelled task, so stop from a new one.
+            await Task {
                 do {
-                    try await frontTrack?.stop()
+                    try await frontTrack.stop()
                     print("Stopped front track")
                 } catch {
                     print("Failed to stop front track, error: \(error)")
                 }
                 do {
-                    try await backTrack?.stop()
+                    try await backTrack.stop()
                     print("Stopped back track")
                 } catch {
                     print("Failed to stop back track, error: \(error)")
                 }
+            }.value
+            if self.frontTrack === frontTrack {
+                self.frontTrack = nil
             }
-        })
+            if self.backTrack === backTrack {
+                self.backTrack = nil
+            }
+        }
     }
 }
