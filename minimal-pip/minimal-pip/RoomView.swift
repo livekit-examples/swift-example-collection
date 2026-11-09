@@ -49,19 +49,34 @@ struct MyRemoteVideoTrackView: View {
             .controlSize(.extraLarge)
             .sensoryFeedback(.success, trigger: pip)
         }
-        .onAppear {
-            Task {
-                let track = await LocalVideoTrack.createCameraTrack()
-                self.track = track
-                if let cameraCapturer = track.capturer as? CameraCapturer {
-                    cameraCapturer.isMultitaskingAccessEnabled = true
-                }
-                try await track.start()
+        // Tied to the view's appearance, so disappearing cancels setup and stops the track this run created.
+        .task {
+            let track = await LocalVideoTrack.createCameraTrack()
+            guard !Task.isCancelled else { return }
+            if let cameraCapturer = track.capturer as? CameraCapturer {
+                cameraCapturer.isMultitaskingAccessEnabled = true
             }
-        }
-        .onDisappear {
-            Task {
-                try await track?.stop()
+            self.track = track
+
+            do {
+                try await track.start()
+            } catch {
+                print("Failed to start camera track, error: \(error)")
+            }
+
+            // Keep the camera running until the view disappears and cancels this task.
+            try? await Task.sleep(nanoseconds: .max)
+
+            // stop() throws CancellationError inside this cancelled task, so stop from a new one.
+            await Task {
+                do {
+                    try await track.stop()
+                } catch {
+                    print("Failed to stop camera track, error: \(error)")
+                }
+            }.value
+            if self.track === track {
+                self.track = nil
             }
         }
     }
