@@ -1,42 +1,24 @@
 PODS:
-  - DequeModule (1.1.4):
-    - InternalCollectionsUtilities (= 1.1.4)
-  - InternalCollectionsUtilities (1.1.4)
-  - LiveKitClient (2.8.1):
-    - DequeModule (= 1.1.4)
-    - LiveKitWebRTC (= 137.7151.09)
-    - Logging (= 1.5.4)
-    - OrderedCollections (= 1.1.4)
-    - SwiftProtobuf
-  - LiveKitWebRTC (137.7151.09)
-  - Logging (1.5.4)
-  - OrderedCollections (1.1.4):
-    - InternalCollectionsUtilities (= 1.1.4)
-  - SwiftProtobuf (1.31.1)
+  - LiveKitClient (2.19.0):
+    - LiveKitFFI (= 0.13.1)
+    - LiveKitWebRTC (= 150.7871.04)
+  - LiveKitFFI (0.13.1)
+  - LiveKitWebRTC (150.7871.04)
 
 DEPENDENCIES:
-  - LiveKitClient (= 2.8.1)
+  - LiveKitClient (= 2.19.0)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
-    - SwiftProtobuf
-  https://github.com/livekit/podspecs.git:
-    - DequeModule
-    - InternalCollectionsUtilities
+  https://github.com/livekit/podspecs:
     - LiveKitClient
+    - LiveKitFFI
     - LiveKitWebRTC
-    - Logging
-    - OrderedCollections
 
 SPEC CHECKSUMS:
-  DequeModule: 646e2f186357734310ba696172d271f0988d3fb8
-  InternalCollectionsUtilities: c32aa362a8455b73c93cc941ac98f50c4e25ed0c
-  LiveKitClient: 6c1ab5c746964a6dafb1bd72b3f19c85de0c9668
-  LiveKitWebRTC: 06ca296a26e5837a43fe6a6a500bc30b2ab499c4
-  Logging: b2531e476d82e63f657fc610379691ae44daa9f2
-  OrderedCollections: 68f29db2e771b704400ee1078ea34ef98a38e01f
-  SwiftProtobuf: e02f51c8c2df5845657aee2d4de9d61bf50ef788
+  LiveKitClient: 9547004660ae8d5ac648daa2c8b47b68c41a7a56
+  LiveKitFFI: 59657f34e7fd069f371bec950a21e54cb4b13eea
+  LiveKitWebRTC: 273ccc71c520e9cf6f28ff42e402940b71e3e34d
 
-PODFILE CHECKSUM: a595ca003a911832dc36851b15c8637412af8a98
+PODFILE CHECKSUM: 2e721071a64bade5623edef7d60cc7b3c509c99c
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.17.0

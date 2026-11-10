@@ -387,8 +387,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/livekit/client-sdk-swift";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.10.2;
+				kind = exactVersion;
+				version = 2.19.0;
 			};
 		};
 		68AC1DBF2B7CF564004B8D4E /* XCRemoteSwiftPackageReference "Specs" */ = {
@@ -396,7 +396,7 @@
 			repositoryURL = "https://github.com/webrtc-sdk/Specs";
 			requirement = {
 				kind = exactVersion;
-				version = 114.5735.8;
+				version = 125.6422.09;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
